@@ -125,7 +125,7 @@
         </header>
 
         <nav class="flex justify-center border-b-2 border-gray-200 mb-2">
-            <button data-day="0" class="nav-button active text-sm sm:text-base font-bold py-3 px-2 sm:px-4">✈️ 개요</button>
+            <button data-day="0" class="nav-button active text-sm sm:text-base font-bold py-3 px-2 sm:px-4">✈️ 개요 & 출국</button>
             <button data-day="1" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 1일차</button>
             <button data-day="2" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 2일차</button>
             <button data-day="3" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 3일차</button>
@@ -146,23 +146,47 @@
     <script>
         let tripData = {
             0: {
-                title: "여행 개요 및 준비",
+                title: "여행 개요 및 출국 절차",
                 sections: [
+                    {
+                        title: "✈️ 김포공항 출국 상세 안내",
+                        icon: "",
+                        items: [
+                            { name: "1. 공항 도착 (오전 4:40 ~ 5:10 추천)", content: [{ detail: "국제선 항공편은 최소 2시간 30분 ~ 3시간 전 도착을 권장합니다. 7시 40분 비행기이므로, 오전 5시 전후로 도착하여 여유롭게 준비하는 것이 좋습니다." }] },
+                            { name: "2. 항공사 카운터 확인 및 이동", content: [{ detail: "공항에 도착하면 가장 먼저 출국층 중앙에 있는 <b>운항 정보 안내 모니터(FIDS)</b>를 확인하세요.<br>탑승할 항공편명(예: JAL, ANA)과 목적지(HND)를 찾으면 체크인 카운터 번호(예: A1-A5)를 알 수 있습니다. 해당 카운터로 이동합니다." }] },
+                            { name: "3. 탑승 수속 및 수하물 처리", content: [{ detail: `
+                                <div class="shop-detail">
+                                    <p class="font-bold text-gray-800">위탁 수하물 (부치는 짐)</p>
+                                    <p class="text-sm mt-1">여권과 E-티켓을 직원에게 보여주고, 큰 캐리어를 저울에 올려 무게를 잽니다. 항공사 규정(보통 23kg 이내)을 통과하면 수하물표를 받고 짐을 부칩니다.</p>
+                                </div>
+                                <div class="shop-detail">
+                                    <p class="font-bold text-gray-800">기내 수하물 (들고 타는 짐)</p>
+                                    <p class="text-sm mt-1">백팩이나 작은 캐리어 등 기내에 들고 갈 짐은 무게를 재고, 규정에 맞으면 확인용 태그를 붙여줍니다. (보통 10kg 이내)</p>
+                                </div>
+                                <div class="shop-detail">
+                                    <p class="font-bold text-red-600">🚨 기내 수하물이 기준 무게를 넘었을 경우</p>
+                                    <p class="text-sm mt-1">
+                                        1. 직원이 무게 초과를 알리면, 두 가지 선택지가 있습니다: <b>① 추가 요금 지불</b> 또는 <b>② 짐 일부를 위탁 수하물로 이동</b>.<br>
+                                        2. <b>짐을 옮기려면:</b> 잠시 옆으로 비켜나 캐리어를 열고, 무거운 물건(보조배터리 등 기내 반입 필수품 제외)을 위탁 수하물 가방으로 옮겨야 합니다. 다시 줄을 서서 무게를 재거나, 직원의 안내에 따라 처리합니다.<br>
+                                        3. <b>요금을 지불하려면:</b> 항공사 규정에 따른 초과 요금을 카운터에서 바로 결제하고 탑승권을 받을 수 있습니다.<br>
+                                        <b>팁:</b> 액체류(화장품 등)는 위탁 수하물로 보내고, 보조배터리나 노트북 등 전자기기는 반드시 기내에 들고 타야 합니다.
+                                    </p>
+                                </div>
+                                <div class="shop-detail">
+                                    <p class="font-bold text-gray-800">탑승권 수령</p>
+                                    <p class="text-sm mt-1">모든 과정이 끝나면 좌석이 배정된 종이 탑승권을 받습니다. 탑승구 번호와 탑승 시작 시간을 꼭 확인하세요.</p>
+                                </div>
+                            ` }] },
+                            { name: "4. 보안 검색 및 출국 심사", content: [{ detail: "탑승권을 받은 후 '출국장' 표지판을 따라 이동합니다. 보안 검색대에서 기내 수하물과 소지품을 검사받고, 이후 출국 심사대에서 여권과 탑승권을 확인받고 통과합니다. (자동출입국심사 등록 시 더욱 빠릅니다.)" }] },
+                            { name: "5. 면세 구역 및 탑승구 이동", content: [{ detail: "출국 심사를 마치면 면세 구역입니다. 탑승권에 적힌 <b>탑승구 번호</b>를 다시 확인하고, 비행기 출발 <b>최소 30분 전</b>까지는 해당 탑승구 앞에 도착해야 합니다." }] },
+                        ]
+                    },
                     {
                         title: "여행 기본 정보",
                         icon: "✈️",
                         items: [
                             { name: "항공편", content: [{ detail: "<b>출국:</b> 7/28(월) 07:40 GMP → 09:50 HND<br><b>귀국:</b> 7/31(목) 20:05 HND → GMP" }] },
                             { name: "숙소", content: [{ detail: "<b>1일차:</b> Onyado Nono Asakusa Bettei (아사쿠사)<br><b>2-3일차:</b> Nohga Hotel Akihabara Tokyo (아키하바라)" }] },
-                        ]
-                    },
-                    {
-                        title: "여행 준비 & 예약 팁",
-                        icon: "💡",
-                        items: [
-                            { name: "한국에서 준비", content: [{ detail: "eSIM/유심, 여행자 보험, 110V 변환 어댑터, 각종 티켓 예매" }] },
-                            { name: "교통카드 팁", content: [{ detail: "<b>스이카(Suica) 또는 파스모(Pasmo) 카드</b>를 공항에서 구매하거나 모바일로 발급받으면, 모든 대중교통을 편리하게 이용하고 편의점 등에서 결제도 가능해 매우 편리합니다." }] },
-                            { name: "식당 예약 팁", content: [{ detail: "온라인 예약(타베로그 등), 호텔 컨시어지, 구글맵 예약 기능을 적극 활용하세요." }] },
                         ]
                     },
                 ]
