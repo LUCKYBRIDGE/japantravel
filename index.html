@@ -12,6 +12,12 @@
     <!-- Visualization & Content Choices: Overview - Charts retained for a quick summary. Daily Itinerary - Interactive cards with richer content. New 'Checklist' feature (HTML/JS) with checkboxes for interactivity and progress tracking. This directly addresses the feedback for "more information" by making key tasks and tips permanently visible on each day's view. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
+        :root {
+            --base-font-size: 16px;
+        }
+        html {
+            font-size: var(--base-font-size);
+        }
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #FDFBF8;
@@ -39,8 +45,8 @@
             transition: max-height 0.5s ease-out, padding 0.5s ease-out;
         }
         .card-content.open {
-            max-height: 2000px; /* Increased max-height for more content */
-            transition: max-height 0.8s ease-in, padding 0.5s ease-in;
+            max-height: 2500px; /* Increased max-height for more content */
+            transition: max-height 1s ease-in, padding 0.5s ease-in;
         }
         .heat-tip {
             background-color: #EFF6FF;
@@ -53,9 +59,19 @@
             width: 100%;
             max-width: 400px;
         }
-        .checklist-item input:checked + span {
+        .checklist-item input[type="checkbox"]:checked + input[type="text"] {
             text-decoration: line-through;
             color: #9CA3AF;
+        }
+        .checklist-text-input {
+            background-color: transparent;
+            border: none;
+            outline: none;
+            width: 100%;
+        }
+        .checklist-text-input:focus {
+            background-color: #FFFBEB;
+            border-bottom: 1px solid #FBBF24;
         }
         .shop-detail {
             border-top: 1px solid #F3F4F6;
@@ -108,13 +124,20 @@
             <p class="mt-2 text-base md:text-lg text-gray-600">7월의 더위를 피하는 쾌적한 여행 플래너 (2025년 기준 정보)</p>
         </header>
 
-        <nav class="flex justify-center border-b-2 border-gray-200 mb-6">
+        <nav class="flex justify-center border-b-2 border-gray-200 mb-2">
             <button data-day="0" class="nav-button active text-sm sm:text-base font-bold py-3 px-2 sm:px-4">✈️ 개요</button>
             <button data-day="1" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 1일차</button>
             <button data-day="2" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 2일차</button>
             <button data-day="3" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 3일차</button>
             <button data-day="4" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 4일차</button>
         </nav>
+        
+        <div id="font-controller" class="flex justify-center items-center gap-2 mb-6 text-sm">
+            <span>글자 크기:</span>
+            <button id="decrease-font" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-2 rounded-full">-</button>
+            <button id="reset-font" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-2 rounded">초기화</button>
+            <button id="increase-font" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-2 rounded-full">+</button>
+        </div>
 
         <main id="content-area">
         </main>
@@ -175,6 +198,10 @@
                                 { name: { kor: "사료 츠보시타", jpn: "茶寮 つぼ市製茶本舗", eng: "Saryo Tsuboichi" }, description: "고급스러운 분위기의 전문 말차 카페", signatureMenu: "말차 파르페", menuDescription: "말차 아이스크림, 팥, 떡 등을 올린 디저트", avgCostPerPerson: "약 ¥1,600 / ₩14,400 (파르페 1개 기준)", tip: "덴보인도리 근처. 잠시 쉬어가기 좋은 곳." },
                                 { name: { kor: "후르츠 팔러 고토", jpn: "フルーツパーラーゴトー", eng: "Fruit Parlor Goto" }, description: "제철 과일 듬뿍 파르페 맛집", signatureMenu: "계절 과일 파르페", menuDescription: "신선한 제철 과일로 만든 화려한 파르페", avgCostPerPerson: "약 ¥2,800 / ₩25,200 (파르페 1개 기준)", tip: "1시간 이상 웨이팅은 기본. 시간에 여유 있을 때 방문." },
                             ]},
+                             { name: "추가 추천 (쇼핑 & 구경)", icon: "✨", content: [
+                                { name: { kor: "무인양품 (아사쿠사 EKIMISE점)", jpn: "無印良品 浅草EKIMISE", eng: "MUJI Asakusa EKIMISE" }, description: "아사쿠사역과 연결된 쇼핑몰 내 위치", signatureMenu: "의류, 잡화, 식품", avgCostPerPerson: "쇼핑 비용", tip: "동선이 편리하고, 여행 중 필요한 물품을 구매하기 좋음." },
+                                { name: { kor: "갓파바시 도구 거리", jpn: "かっぱ橋道具街", eng: "Kappabashi Kitchen Town" }, description: "일본 최대의 주방용품 전문 상점가", signatureMenu: "그릇, 칼, 음식 모형 등", avgCostPerPerson: "구경은 무료", tip: "요리에 관심 없어도 음식 모형 가게 등 볼거리가 많음." },
+                            ]},
                             { name: "주변 산책 및 피서", icon: "🚶‍♂️", type: "heat-tip", content: [{ detail: "<b>산책:</b> 덴보인도리 (伝法院通り / Denboin-dori) → 스미다 공원 강변 산책<br><b>실내 피서:</b> 아사쿠사 문화 관광 센터 8층 무료 전망대, 신나카미세 상점가 (新仲見世商店街 / Shin-Nakamise) 구경<br><b>지하 쇼핑:</b> 아사쿠사역과 연결된 일본에서 가장 오래된 지하상가인 아사쿠사 지하상가 (浅草地下街 / Asakusa Chikagai)에서 레트로한 분위기를 느껴보세요." }] },
                         ]
                     },
@@ -227,6 +254,11 @@
                                 { name: { kor: "큐슈 장가라 라멘", jpn: "九州じゃんがららあめん", eng: "Kyushu Jangara Ramen" }, description: "진한 돈코츠 라멘 전문점", signatureMenu: "돈코츠 라멘", menuDescription: "돼지뼈를 우려낸 뽀얀 국물의 라멘", avgCostPerPerson: "약 ¥1,200 / ₩10,800 (기본 라멘 + 토핑)", tip: "토핑을 자유롭게 추가 가능. 줄은 빨리 줄어드는 편." },
                                 { name: { kor: "고고카레", jpn: "ゴーゴーカレー", eng: "Go! Go! Curry!" }, description: "볼륨 만점의 진한 카레라이스", signatureMenu: "로스카츠 카레", menuDescription: "돈카츠를 올린 진한 일본식 카레", avgCostPerPerson: "약 ¥1,100 / ₩9,900 (기본 카레 기준)", tip: "고릴라 간판이 인상적. 웨이팅 거의 없음." },
                             ]},
+                             { name: "추가 추천 (쇼핑 & 구경)", icon: "✨", content: [
+                                { name: { kor: "무인양품 (아키바 토림점)", jpn: "無印良品 アキバ・トリム", eng: "MUJI Akiba Tolim" }, description: "아키하바라역과 바로 연결된 쇼핑몰", signatureMenu: "의류, 잡화, 식품", avgCostPerPerson: "쇼핑 비용", tip: "역과 바로 연결되어 있어 접근성이 매우 좋음." },
+                                { name: { kor: "슈퍼 포테이토", jpn: "スーパーポテト", eng: "Super Potato" }, description: "레트로 게임의 성지", signatureMenu: "고전 게임 팩, 게임기", avgCostPerPerson: "구경은 무료", tip: "5층 게임 코너에서 추억의 게임을 직접 해볼 수 있음." },
+                                { name: { kor: "만다라케 콤플렉스", jpn: "まんだらけコンプレックス", eng: "Mandarake Complex" }, description: "8층 규모의 거대한 중고 서브컬처 샵", signatureMenu: "만화, 피규어, 게임 등", avgCostPerPerson: "구경은 무료", tip: "희귀한 아이템을 발견하는 재미가 쏠쏠함." },
+                            ]},
                             { name: "오후 실내 산책 (피서)", icon: "🚶‍♂️", type: "heat-tip", content: [{ detail: "<b>추천 동선:</b> 요도바시 아키바 (ヨドバシAkiba) → 라디오회관 (ラジオ会館) → 애니메이트 (アニメイト) 순으로 대형 건물을 옮겨 다니며 쇼핑<br><b>지적인 피서:</b> 아키하바라에서 가까운 진보초 (神保町) 헌책방 거리까지 걸어가며 탐방" }] },
                         ]
                     },
@@ -251,8 +283,8 @@
                 route_highlight: "긴자/유라쿠초 지역에서 쇼핑과 점심을 즐긴 후, 도보나 지하철로 가까운 도쿄역으로 이동합니다. 저녁에는 도쿄역 주변 또는 치요다구청에서 야경을 감상하는 코스입니다.",
                 checklist: [
                     { text: "무인양품 긴자점 쇼핑하기", done: false },
+                    { text: "아식스 긴자점에서 쇼핑하기", done: false },
                     { text: "치이카와 랜드 방문하기", done: false },
-                    { text: "KITTE 옥상정원에서 도쿄역 보기", done: false },
                     { text: "치요다구청 무료 야경 감상하기", done: false }
                 ],
                 sections: [
@@ -260,7 +292,8 @@
                         time: "오전",
                         title: "긴자 코스: 플래그십 스토어 탐방",
                         items: [
-                            { name: { kor: "무인양품 긴자점", jpn: "無印良品 銀座", eng: "MUJI Ginza" }, icon: "🛍️", content: [{ detail: "JR 유라쿠초역에서 하차. 세계 최대 규모의 무인양품에서 쇼핑과 브런치를 즐깁니다." }] },
+                            { name: { kor: "★메인 미션: 무인양품 긴자점", jpn: "無印良品 銀座", eng: "MUJI Ginza" }, icon: "🛍️", content: [{ detail: "JR 유라쿠초역에서 하차. 이번 여행의 핵심 코스! 세계 최대 규모의 무인양품에서 시간을 넉넉히 잡고 쇼핑, 식사, 휴식까지 모든 것을 즐겨보세요." }] },
+                            { name: { kor: "★메인 미션: 아식스 긴자", jpn: "アシックスランウォークギンザ", eng: "ASICS RUNWALK GINZA" }, icon: "👟", content: [{ detail: "무인양품 근처에 위치. 3D 발 계측 서비스 등을 통해 내 발에 꼭 맞는 신발을 찾아보세요. 의류 및 액세서리도 다양합니다." }] },
                             { name: "오전 산책 코스 (긴자)", icon: "🚶‍♂️", content: [{ detail: "무인양품 쇼핑 후, 긴자의 중심 거리인 주오도리(中央通り)를 따라 아이쇼핑하며 걷기. 주말에는 '보행자 천국'으로 운영되어 차 없는 거리를 즐길 수 있습니다." }] },
                             { name: "점심 식사 (긴자/니혼바시)", icon: "🍜", content: [
                                 { name: { kor: "긴자 카가리", jpn: "銀座 篝", eng: "Ginza Kagari" }, description: "미슐랭 가이드에 오른 닭백탕 라멘", signatureMenu: "토리파이탄 소바", menuDescription: "뽀얗고 진한 닭 육수 라멘", avgCostPerPerson: "약 ¥1,600 / ₩14,400 (라멘 1개 기준)", tip: "예약 불가, 1~2시간 웨이팅 각오. 크림수프 같은 진한 국물." },
@@ -274,6 +307,10 @@
                         title: "도쿄역 코스: 캐릭터 쇼핑 & 산책",
                         items: [
                             { name: { kor: "치이카와 랜드", jpn: "ちいかわらんど", eng: "Chiikawa Land" }, icon: "💖", content: [{ detail: "긴자에서 도쿄역으로 이동. '도쿄 캐릭터 스트리트' 방문. 방문 전 공식 SNS에서 정리권(번호표) 배부 여부 확인 필수!" }] },
+                             { name: "추가 추천 (선택)", icon: "✨", content: [
+                                { name: { kor: "이토야", jpn: "伊東屋", eng: "Itoya" }, description: "100년 역사의 대형 문구 전문점", signatureMenu: "만년필, 노트, 디자인 소품", avgCostPerPerson: "구경은 무료", tip: "문구에 관심이 있다면 꼭 들러봐야 할 곳. 건물 전체가 볼거리." },
+                                { name: { kor: "긴자 웨스트", jpn: "銀座ウエスト", eng: "Ginza West" }, description: "클래식한 분위기의 노포 카페", signatureMenu: "리프 파이, 케이크", menuDescription: "고풍스러운 분위기에서 즐기는 커피와 디저트", avgCostPerPerson: "약 ¥1,500 / ₩13,500", tip: "쇼핑 중 잠시 쉬어가기 좋은 차분한 공간." },
+                            ]},
                             { name: "오후 산책 코스 (도쿄역)", icon: "🚶‍♂️", type: "heat-tip", content: [{ detail: "<b>산책:</b> 도쿄역 마루노우치 광장에서 고풍스러운 역사를 감상하고, 황궁으로 이어지는 넓은 교코도리(行幸通り) 산책<br><b>실내 피서:</b> KITTE (キッテ) 옥상정원, 마루노우치 빌딩, 신마루노우치 빌딩 등에서 쇼핑 및 휴식<br><b>지하 쇼핑:</b> 도쿄역과 연결된 야에스 지하상가 (八重洲地下街) 탐방" }] },
                         ]
                     },
@@ -309,6 +346,11 @@
                         items: [
                             { name: "호텔 체크아웃 및 이동", icon: "🛄", content: [{ detail: "호텔 체크아웃 후 짐 맡기고 우에노로 이동" }] },
                             { name: "오전 활동 (선택)", icon: "🛒", content: [{ detail: "<b>A. 아키하바라 마무리:</b> 못 산 물건 쇼핑<br><b>B. 우에노 시장 구경:</b> 아메요코 시장 (アメ横 / Ameya Yokocho)에서 드럭스토어 등 쇼핑<br><b>C. 야나카 긴자 산책:</b> '고양이 마을' 야나카 긴자 (谷中銀座 / Yanaka Ginza)에서 길거리 음식 즐기기" }] },
+                             { name: "추가 추천 (쇼핑 & 구경)", icon: "✨", content: [
+                                { name: { kor: "무인양품 (우에노 마루이점)", jpn: "無印良品 上野マルイ", eng: "MUJI Ueno Marui" }, description: "우에노역 바로 앞 백화점 내 위치", signatureMenu: "의류, 잡화, 식품", avgCostPerPerson: "쇼핑 비용", tip: "마지막 날 선물을 사거나 필요한 물품을 구매하기 좋음." },
+                                { name: { kor: "야나카 시놋포야", jpn: "やなかしっぽや", eng: "Yanaka Shippoya" }, description: "고양이 꼬리 모양의 귀여운 도넛", signatureMenu: "고양이 꼬리 도넛", menuDescription: "다양한 맛의 스틱형 구운 도넛", avgCostPerPerson: "약 ¥500 / ₩4,500", tip: "야나카 긴자 산책의 필수 간식. 사진 찍기 좋음." },
+                                { name: { kor: "야마시로야", jpn: "ヤマシロヤ", eng: "Yamashiroya" }, description: "우에노역 앞 대형 장난감 가게", signatureMenu: "캐릭터 상품, 장난감", avgCostPerPerson: "구경은 무료", tip: "아이와 함께라면 꼭 들러봐야 할 곳. 어른도 즐겁다." },
+                            ]},
                             { name: "오전 산책 코스 (우에노/야나카)", icon: "🚶‍♂️", type: "heat-tip", content: [{ detail: "<b>시장 산책:</b> 활기 넘치는 아메요코 시장 (アメ横) 구경<br><b>공원 산책:</b> 우에노 공원 (上野公園)의 녹음을 즐기며 시노바즈 연못 주변 걷기<br><b>골목 산책:</b> 우에노 공원을 가로질러 정겨운 야나카 긴자 (谷中銀座) 골목까지 걷기" }] },
                         ]
                     },
@@ -482,14 +524,20 @@
                         <h3 class="text-lg font-bold mb-3 text-amber-800 flex items-center">✔️ ${day}일차 핵심 미션</h3>
                         <ul class="space-y-2">`;
             dayData.checklist.forEach((item, index) => {
-                html += `<li class="checklist-item">
-                            <label class="flex items-center cursor-pointer">
+                html += `<li class="checklist-item flex items-center gap-2">
+                            <label class="flex items-center cursor-pointer flex-grow">
                                 <input type="checkbox" data-day="${day}" data-index="${index}" class="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500" ${item.done ? 'checked' : ''}>
-                                <span class="ml-3 text-gray-700">${item.text}</span>
+                                <input type="text" value="${item.text}" data-day="${day}" data-index="${index}" class="checklist-text-input ml-2 p-1 w-full text-gray-700">
                             </label>
+                            <button data-day="${day}" data-index="${index}" class="delete-mission-btn text-red-400 hover:text-red-600 font-bold text-lg">×</button>
                          </li>`;
             });
-            html += `</ul></div>`;
+            html += `</ul>
+                     <div class="mt-4 flex gap-2">
+                        <input type="text" id="new-mission-input-${day}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm" placeholder="새 미션 추가...">
+                        <button data-day="${day}" class="add-mission-btn bg-amber-500 hover:bg-amber-600 text-white font-bold py-1 px-3 rounded-md">추가</button>
+                     </div>
+                    </div>`;
             html += `<div class="bg-blue-50 p-4 rounded-lg shadow-md border-l-4 border-blue-400">
                         <h3 class="text-lg font-bold mb-2 text-blue-800 flex items-center">💡 ${day}일차 동선 하이라이트</h3>
                         <p class="text-sm text-blue-700">${dayData.route_highlight}</p>
@@ -576,6 +624,15 @@
                 });
             }
         }
+        
+        function applyFontSize(size) {
+            document.documentElement.style.setProperty('--base-font-size', `${size}px`);
+        }
+
+        function updateFontSize(newSize) {
+            localStorage.setItem('tokyoTripFontSize', newSize);
+            applyFontSize(newSize);
+        }
 
         navButtons.forEach(button => {
             button.addEventListener('click', () => {
@@ -606,6 +663,28 @@
                     copyButton.innerHTML = originalIcon;
                     copyButton.classList.remove('copied');
                 }, 1500);
+                return;
+            }
+
+            const deleteBtn = e.target.closest('.delete-mission-btn');
+            if (deleteBtn) {
+                const day = deleteBtn.dataset.day;
+                const index = parseInt(deleteBtn.dataset.index);
+                tripData[day].checklist.splice(index, 1);
+                saveData();
+                renderDay(day);
+                return;
+            }
+
+            const addBtn = e.target.closest('.add-mission-btn');
+            if (addBtn) {
+                const day = addBtn.dataset.day;
+                const input = document.getElementById(`new-mission-input-${day}`);
+                if (input && input.value.trim() !== '') {
+                    tripData[day].checklist.push({ text: input.value.trim(), done: false });
+                    saveData();
+                    renderDay(day);
+                }
                 return;
             }
             
@@ -640,7 +719,39 @@
                  const index = target.dataset.index;
                  tripData[day].checklist[index].done = target.checked;
                  saveData();
+            } else if (target.matches('.checklist-text-input')) {
+                const day = target.dataset.day;
+                const index = target.dataset.index;
+                tripData[day].checklist[index].text = target.value;
+                saveData();
             }
+        });
+
+        // Font size controller logic
+        const increaseButton = document.getElementById('increase-font');
+        const decreaseButton = document.getElementById('decrease-font');
+        const resetButton = document.getElementById('reset-font');
+        let currentFontSize = parseInt(localStorage.getItem('tokyoTripFontSize') || '16');
+        
+        applyFontSize(currentFontSize);
+
+        increaseButton.addEventListener('click', () => {
+            if (currentFontSize < 24) { // Max size
+                currentFontSize += 1;
+                updateFontSize(currentFontSize);
+            }
+        });
+
+        decreaseButton.addEventListener('click', () => {
+            if (currentFontSize > 12) { // Min size
+                currentFontSize -= 1;
+                updateFontSize(currentFontSize);
+            }
+        });
+        
+        resetButton.addEventListener('click', () => {
+            currentFontSize = 16; // Default size
+            updateFontSize(currentFontSize);
         });
 
         // Initialize
