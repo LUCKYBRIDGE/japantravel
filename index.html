@@ -108,6 +108,21 @@
             margin-top: 0.75rem;
             resize: vertical;
         }
+        .toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: bold;
+            transition: bottom 0.5s ease-in-out;
+            z-index: 50;
+        }
+        .toast.show {
+            bottom: 2rem;
+        }
         @media (min-width: 768px) {
             .chart-container {
                 height: 320px;
@@ -125,22 +140,31 @@
         </header>
 
         <nav class="flex justify-center border-b-2 border-gray-200 mb-2">
-            <button data-day="0" class="nav-button active text-sm sm:text-base font-bold py-3 px-2 sm:px-4">✈️ 개요 & 출국</button>
+            <button data-day="0" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">✈️ 개요 & 출국</button>
             <button data-day="1" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 1일차</button>
-            <button data-day="2" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 2일차</button>
+            <button data-day="2" class="nav-button active text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 2일차</button>
             <button data-day="3" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 3일차</button>
             <button data-day="4" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 4일차</button>
         </nav>
         
-        <div id="font-controller" class="flex justify-center items-center gap-2 mb-6 text-sm">
-            <span>글자 크기:</span>
-            <button id="decrease-font" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-2 rounded-full">-</button>
-            <button id="reset-font" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-2 rounded">초기화</button>
-            <button id="increase-font" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-2 rounded-full">+</button>
+        <div class="flex justify-center items-center gap-2 mb-6 text-sm flex-wrap">
+            <div id="font-controller" class="flex items-center gap-2">
+                <span>글자 크기:</span>
+                <button id="decrease-font" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-2 rounded-full">-</button>
+                <button id="reset-font" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-2 rounded">초기화</button>
+                <button id="increase-font" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-2 rounded-full">+</button>
+            </div>
+            <div id="data-controller" class="flex items-center gap-2 ml-4">
+                <span>계획 관리:</span>
+                <button id="save-plan" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded">💾 저장하기</button>
+                <button id="delete-plan" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded">🗑️ 전체 삭제</button>
+            </div>
         </div>
 
         <main id="content-area">
         </main>
+        
+        <div id="toast-message" class="toast"></div>
     </div>
 
     <script>
@@ -249,58 +273,59 @@
                 ]
             },
             2: {
-                title: "아키하바라 & 간다 탐방",
-                theme: "서브컬처 성지 순례와 전통 신사 방문",
-                route_highlight: "아사쿠사에서 아키하바라로 이동 후, 하루 종일 아키하바라와 인접한 간다 지역에 집중하는 동선입니다. 주요 쇼핑몰과 명소가 모두 도보 거리에 있습니다.",
+                title: "우에노 & 아키하바라",
+                theme: "활기찬 시장과 서브컬처 성지 순례",
+                route_highlight: "아사쿠사에서 체크아웃 후, 가까운 우에노역 코인락커에 짐을 보관하고 오전 일정을 시작합니다. 점심 후 아키하바라로 이동해 호텔 체크인, 이후 아키하바라와 간다 지역을 집중 탐방하는 가장 효율적인 동선입니다.",
                 checklist: [
-                    { text: "간다 묘진 'IT 부적' 구경하기", done: false },
-                    { text: "Yodobashi-Akiba에서 전자제품 쇼핑", done: false },
-                    { text: "돈키호테 아키하바라점에서 쇼핑하기", done: false },
-                    { text: "애니메이트 방문하기", done: false }
+                    { text: "TruffleBAKERY에서 해초버터 소금빵 맛보기", done: false },
+                    { text: "아메요코 시장 구경 및 길거리 음식 체험", done: false },
+                    { text: "요도바시 카메라에서 소니 SD카드 구매", done: false },
+                    { text: "간다 묘진에서 'IT 부적' 구경하기", done: false },
                 ],
                 sections: [
                     {
                         time: "오전",
-                        title: "아키하바라 이동 및 오전 코스",
+                        title: "이동 및 우에노 탐방",
                         items: [
-                            { name: "호텔 이동 및 짐 보관", icon: "🛄", content: [{ detail: "아사쿠사 체크아웃 → <b>🚇 이동:</b> 아사쿠사역에서 <b>도쿄메트로 긴자선(銀座線)</b> 탑승 (약 15분) → 스에히로초역(末広町駅) 하차 → Nohga Hotel Akihabara Tokyo에 짐 맡기기" }] },
-                            { name: "아침 식사 (선택)", icon: "☕", content: [
-                                { name: { kor: "펠리칸 카페", jpn: "ペリカンカフェ", eng: "Pelican Cafe" }, description: "80년 전통 식빵으로 만든 토스트", signatureMenu: "숯불 토스트, 햄 커틀릿 샌드위치", menuDescription: "숯불에 구워 겉바속촉 식감이 특징인 토스트", avgCostPerPerson: "약 ¥1,300 / ₩11,700 (토스트 + 커피)", rating: "⭐ 4.2", tip: "아사쿠사 출발 전 방문. 오픈 시간에도 줄이 있을 정도로 인기." },
-                                { name: { kor: "블루 보틀 커피", jpn: "ブルーボトルコーヒー 神田万世橋", eng: "Blue Bottle Coffee Kanda" }, description: "붉은 벽돌 아치가 멋진 감성 카페", signatureMenu: "드립 커피, 놀라 콜드브루", avgCostPerPerson: "약 ¥1,300 / ₩11,700 (커피 + 디저트)", rating: "⭐ 4.3", tip: "아키하바라 도착 후 방문. 분위기를 즐기기 좋은 곳." },
-                                { name: { kor: "스키야/요시노야", jpn: "すき家/吉野家", eng: "Sukiya/Yoshinoya" }, description: "초고속 가성비 아침 정식", signatureMenu: "규동, 생선구이 정식", avgCostPerPerson: "약 ¥700 / ₩6,300 (아침 정식 기준)", rating: "⭐ 3.8", tip: "웨이팅 없이 바로 식사 가능." },
+                            { name: "이동 및 짐 보관", icon: "🛄", content: [{ detail: "아사쿠사 호텔 체크아웃 → 호텔에서 도보 약 8분 거리인 <b>도쿄메트로 긴자선(銀座線) 다와라마치역(田原町駅)</b>으로 이동 → <b>긴자선</b> 탑승 후 <b>우에노역(上野駅)</b>으로 이동 (1정거장, 약 2분) → 우에노역 코인락커에 짐 보관" }] },
+                            { name: "오전 활동 (우에노)", icon: "🏞️", content: [
+                                { name: { kor: "아메요코 시장", jpn: "アメ横", eng: "Ameya Yokocho" }, description: "활기 넘치는 재래시장", signatureMenu: "과일 꼬치, 해산물 덮밥(카이센동)", avgCostPerPerson: "간식 약 ¥500", rating: "⭐ 4.2", tip: "오전 일찍 방문하면 덜 붐빕니다. 저렴한 드럭스토어도 많습니다." },
+                                { name: { kor: "★추가추천: 야마시로야", jpn: "ヤマシロヤ", eng: "Yamashiroya" }, description: "우에노역 앞 대형 장난감 가게", popularItems: "캐릭터 상품, 장난감, 프라모델", avgCostPerPerson: "구경은 무료", rating: "⭐ 4.3", tip: "닌텐도, 산리오 등 다양한 캐릭터 상품이 많아 구경하는 재미가 있습니다." },
+                                { name: { kor: "★추가추천: 타케야", jpn: "多慶屋", eng: "Takeya" }, description: "보라색 빌딩으로 유명한 종합 할인점", popularItems: "식료품, 의약품, 가전, 명품", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.0", tip: "돈키호테와는 다른 매력의 로컬 할인점. 여러 건물로 나뉘어 있으니 지도를 잘 확인하세요." },
                             ]},
-                            { name: { kor: "간다 묘진", jpn: "神田明神", eng: "Kanda Myojin Shrine" }, icon: "⛩️", content: [{ detail: "아키하바라 탐방 전, 먼저 신사에 들러 IT 기기를 지켜준다는 독특한 'IT 부적'과 애니메이션 콜라보 에마를 구경합니다." }] },
-                            { name: "오전 산책 코스", icon: "🚶‍♂️", content: [{ detail: "호텔에서 간다 묘진까지 걸으며 주변의 작은 상점과 오피스 거리 풍경 구경하기" }] },
+                            { name: "점심 식사 & 디저트 (우에노)", icon: "🥐", content: [
+                                { name: { kor: "★요청: 트러플베이커리", jpn: "TruffleBAKERY 上野広小路店", eng: "TruffleBAKERY Ueno" }, description: "해초버터(dulse)를 넣은 '바다소금빵'이 유명한 곳", signatureMenu: "바다소금빵, 트러플소금빵", avgCostPerPerson: "약 ¥1,000 / ₩9,000", rating: "⭐ 4.2", tip: "우에노 마루이에서 도보 5분 거리. 빵 나오는 시간에 맞춰가면 더 맛있습니다." },
+                                { name: { kor: "야마베 오카치마치점", jpn: "とんかつ山家 御徒町店", eng: "Tonkatsu Yamabe" }, description: "1000엔 이하 최고의 가성비 돈카츠", signatureMenu: "로스카츠 정식", avgCostPerPerson: "약 ¥950 / ₩8,550", rating: "⭐ 4.5", tip: "식사 시간에는 항상 긴 줄이 있음. 아메요코 시장 근처." },
+                                { name: { kor: "미우라미사키코", jpn: "三浦三崎港", eng: "Miuramisakiko" }, description: "큼직한 네타가 특징인 인기 회전초밥", signatureMenu: "참치 뱃살, 성게알 군함", avgCostPerPerson: "약 ¥2,800 / ₩25,200", rating: "⭐ 4.3", tip: "우에노역 근처. 식사 시간 웨이팅 가능성." },
+                                { name: { kor: "★추가추천: 쿠로후네테이", jpn: "黒船亭", eng: "Kurofunetei" }, description: "100년 전통의 유명 경양식(요쇼쿠) 레스토랑", signatureMenu: "하야시라이스, 비프 스튜", avgCostPerPerson: "약 ¥3,000 / ₩27,000", rating: "⭐ 4.3", tip: "고급스러운 분위기에서 클래식한 일본 경양식을 맛볼 수 있습니다." },
+                                { name: { kor: "★추가추천: 카야바 커피", jpn: "カヤバ珈琲", eng: "Kayaba Coffee" }, description: "오래된 목조 가옥을 개조한 레트로 카페", signatureMenu: "계란 샌드위치, 커피", avgCostPerPerson: "약 ¥1,500 / ₩13,500", rating: "⭐ 4.2", tip: "우에노 공원 너머 야나카 지역에 위치. 산책하며 들르기 좋습니다." },
+                            ]},
                         ]
                     },
                     {
-                        time: "점심 식사 후 오후",
-                        title: "아키하바라 오후 코스: 쇼핑 집중",
+                        time: "오후",
+                        title: "아키하바라 & 간다 탐방",
                         items: [
-                            { name: "점심 식사 (선택)", icon: "🍛", content: [
-                                { name: { kor: "규카츠 이치니산", jpn: "牛カツ壱弐参", eng: "Gyukatsu Ichi Ni San" }, description: "개인 화로에 직접 구워 먹는 규카츠", signatureMenu: "규카츠 정식 (보리밥과 토로로 세트)", menuDescription: "겉만 살짝 튀긴 소고기를 돌판에 구워먹는 커틀릿", avgCostPerPerson: "약 ¥1,800 / ₩16,200 (기본 정식 기준)", rating: "⭐ 4.4", tip: "식사 시간엔 항상 긴 줄. 오픈 직후나 늦은 오후 방문 추천." },
-                                { name: { kor: "큐슈 장가라 라멘", jpn: "九州じゃんがららあめん", eng: "Kyushu Jangara Ramen" }, description: "진한 돈코츠 라멘 전문점", signatureMenu: "본샹 라멘, 카라본 라멘", menuDescription: "돼지뼈를 우려낸 뽀얀 국물의 라멘", avgCostPerPerson: "약 ¥1,200 / ₩10,800 (기본 라멘 + 토핑)", rating: "⭐ 4.4", tip: "토핑을 자유롭게 추가 가능. 줄은 빨리 줄어드는 편." },
-                                { name: { kor: "고고카레", jpn: "ゴーゴーカレー", eng: "Go! Go! Curry!" }, description: "볼륨 만점의 진한 카레라이스", signatureMenu: "로스카츠 카레, 메이저 카레", menuDescription: "돈카츠를 올린 진한 일본식 카레", avgCostPerPerson: "약 ¥1,100 / ₩9,900 (기본 카레 기준)", rating: "⭐ 4.2", tip: "고릴라 간판이 인상적. 웨이팅 거의 없음." },
+                             { name: "호텔 체크인", icon: "🏨", content: [{ detail: "우에노역에서 짐 찾기 → <b>🚇 이동:</b> <b>JR 야마노테선</b>으로 <b>우에노역</b> → <b>아키하바라역(秋葉原駅)</b> 이동 (1정거장, 약 2분) → 아키하바라역 <b>電気街口(Electric Town) 출구</b>로 나와 도보 약 6분 → Nohga Hotel Akihabara Tokyo 체크인" }] },
+                             { name: "쇼핑 & 구경 (아키하바라/간다)", icon: "🎮", content: [
+                                { name: { kor: "★요청: 요도바시 카메라 아키바", jpn: "ヨドバシカメラ マルチメディアAkiba", eng: "Yodobashi Camera Akiba" }, description: "소니 SD카드를 비롯한 모든 전자제품을 구매할 수 있는 초대형 매장", popularItems: "카메라, SD카드, 게임, 가전제품", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.4", tip: "아키하바라역 바로 앞에 위치. 면세 혜택과 다양한 프로모션을 확인하세요." },
+                                { name: { kor: "간다 묘진", jpn: "神田明神", eng: "Kanda Myojin Shrine" }, description: "IT 부적과 애니 콜라보로 유명한 신사", signatureMenu: "IT 정보 안전 수호 부적", avgCostPerPerson: "부적 약 ¥800", rating: "⭐ 4.4", tip: "아키하바라에서 도보 10분 거리. 독특한 기념품을 구매하기 좋음." },
+                                { name: { kor: "만다라케 콤플렉스", jpn: "まんだらけコンプレックス", eng: "Mandarake Complex" }, description: "8층 규모의 거대한 중고 서브컬처 샵", popularItems: "희귀 피규어, 절판 만화책, 레트로 게임", avgCostPerPerson: "구경은 무료", rating: "⭐ 4.4", tip: "검은색 빌딩 전체가 매장. 희귀템을 찾는 재미가 있음." },
+                                { name: { kor: "★추가추천: 2k540 AKI-OKA ARTISAN", jpn: "ニーケーゴーヨンマル アキオカ アルチザン", eng: "2k540 AKI-OKA ARTISAN" }, description: "철길 아래 만들어진 장인들의 거리", popularItems: "수공예품, 가죽 공방, 디자인 소품", avgCostPerPerson: "구경은 무료", rating: "⭐ 4.2", tip: "아키하바라의 서브컬처 분위기와는 다른, 조용하고 감각적인 공간입니다." },
+                                { name: { kor: "★추가추천: 아키하바라 라디오회관", jpn: "秋葉原ラジオ会館", eng: "Akihabara Radio Kaikan" }, description: "피규어, 카드 등 다양한 굿즈샵이 모여있는 빌딩", popularItems: "각종 피규어, 트레이딩 카드, 애니 굿즈", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.3", tip: "아키하바라역 바로 앞에 있어 접근성이 매우 좋습니다." },
                             ]},
-                             { name: "추가 추천 (애니메이션/게임/쇼핑)", icon: "🎮", content: [
-                                { name: { kor: "돈키호테 아키하바라점", jpn: "ドン・キホーテ 秋葉原店", eng: "Don Quijote Akihabara" }, description: "서브컬처 상품이 특화된 지점", popularItems: "코스프레 용품, 성인 굿즈, 전자제품, 과자 등", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.2", tip: "AKB48 극장이 같은 건물에 있어 아이돌 굿즈도 많음." },
-                                { name: { kor: "아키하바라 가챠폰 회관", jpn: "秋葉原ガチャポン会館", eng: "Akihabara Gachapon Hall" }, description: "수백대의 캡슐토이 기계가 모인 곳", popularItems: "최신 애니메이션, 희귀 캐릭터 캡슐토이", avgCostPerPerson: "개당 ¥300~", rating: "⭐ 4.3", tip: "동전 교환기가 있으니 지폐를 가져가도 괜찮음." },
-                                { name: { kor: "무인양품 (아키바 토림점)", jpn: "無印良品 アキバ・トリム", eng: "MUJI Akiba Tolim" }, description: "아키하바라역과 바로 연결된 쇼핑몰", popularItems: "여행용품, 간식, 의류", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.1", tip: "역과 바로 연결되어 있어 접근성이 매우 좋음." },
-                                { name: { kor: "슈퍼 포테이토", jpn: "スーパーポテト", eng: "Super Potato" }, description: "레트로 게임의 성지", popularItems: "패미컴, 슈퍼패미컴 등 고전 게임 팩 및 기기", avgCostPerPerson: "구경은 무료", rating: "⭐ 4.5", tip: "5층 게임 코너에서 추억의 게임을 직접 해볼 수 있음." },
-                                { name: { kor: "만다라케 콤플렉스", jpn: "まんだらけコンプレックス", eng: "Mandarake Complex" }, description: "8층 규모의 거대한 중고 서브컬처 샵", popularItems: "희귀 피규어, 절판 만화책, 레트로 게임", avgCostPerPerson: "구경은 무료", rating: "⭐ 4.4", tip: "희귀한 아이템을 발견하는 재미가 쏠쏠함." },
-                            ]},
-                            { name: "오후 실내 산책 (피서)", icon: "🚶‍♂️", type: "heat-tip", content: [{ detail: "<b>추천 동선:</b> 요도바시 아키바 (ヨドバシAkiba) → 라디오회관 (ラジオ会館) → 애니메이트 (アニメイト) 순으로 대형 건물을 옮겨 다니며 쇼핑<br><b>지적인 피서:</b> 아키하바라에서 가까운 진보초 (神保町) 헌책방 거리까지 걸어가며 탐방" }] },
                         ]
                     },
                     {
                         time: "저녁",
                         title: "아키하바라의 밤",
                         items: [
-                            { name: "호텔 체크인", icon: "🏨", content: [{ detail: "호텔 체크인 후 휴식" }] },
-                            { name: "저녁 식사 (선택)", icon: "🏮", content: [
-                                { name: { kor: "톤카츠 아오키", jpn: "とんかつ檍", eng: "Tonkatsu Aoki" }, description: "고급 돼지고기를 사용한 가성비 돈카츠", signatureMenu: "상급 로스카츠 정식", menuDescription: "두툼한 등심 돈카츠 정식", avgCostPerPerson: "약 ¥2,500 / ₩22,500 (로스카츠 정식 기준)", rating: "⭐ 4.4", tip: "소금에 찍어 먹는 것을 추천. 저녁 시간 웨이팅 가능성." },
-                                { name: { kor: "나카우", jpn: "なか卯", eng: "Nakau" }, description: "촉촉한 오야코동이 맛있는 규동 체인", signatureMenu: "오야코동, 가라아게", menuDescription: "닭고기 계란 덮밥", avgCostPerPerson: "약 ¥800 / ₩7,200 (오야코동 1개 기준)", rating: "⭐ 4.0", tip: "웨이팅 없이 바로 식사 가능." },
-                                { name: { kor: "이세겐", jpn: "いせ源", eng: "Isegen" }, description: "문화재 건물에서 즐기는 아귀 전골", signatureMenu: "아귀 전골 코스", menuDescription: "아귀와 채소를 끓여 먹는 전골 요리", avgCostPerPerson: "저녁 약 ¥11,000 / ₩99,000 (코스 기준)", rating: "⭐ 4.4", tip: "<b>예약 필수.</b> 전화 또는 타베로그, 구루나비 등 예약 사이트를 이용하세요." },
+                            { name: "저녁 식사 (아키하바라 선택)", icon: "🏮", content: [
+                                { name: { kor: "규카츠 이치니산", jpn: "牛カツ壱弐参", eng: "Gyukatsu Ichi Ni San" }, description: "개인 화로에 직접 구워 먹는 규카츠", signatureMenu: "규카츠 정식", avgCostPerPerson: "약 ¥1,800 / ₩16,200", rating: "⭐ 4.4", tip: "식사 시간엔 항상 긴 줄. 오픈 직후나 늦은 오후 방문 추천." },
+                                { name: { kor: "큐슈 장가라 라멘", jpn: "九州じゃんがららあめん", eng: "Kyushu Jangara Ramen" }, description: "진한 돈코츠 라멘 전문점", signatureMenu: "본샹 라멘, 카라본 라멘", avgCostPerPerson: "약 ¥1,200 / ₩10,800", rating: "⭐ 4.4", tip: "토핑을 자유롭게 추가 가능. 줄은 빨리 줄어드는 편." },
+                                { name: { kor: "톤카츠 아오키", jpn: "とんかつ檍", eng: "Tonkatsu Aoki" }, description: "고급 돼지고기를 사용한 가성비 돈카츠", signatureMenu: "상급 로스카츠 정식", avgCostPerPerson: "약 ¥2,500 / ₩22,500", rating: "⭐ 4.4", tip: "소금에 찍어 먹는 것을 추천. 저녁 시간 웨이팅 가능성." },
+                                { name: { kor: "★추가추천: 멘야 무사시 부진", jpn: "麺屋武蔵 武仁", eng: "Menya Musashi Bujin" }, description: "두툼한 고기가 올라간 츠케멘 맛집", signatureMenu: "부진 츠케멘", avgCostPerPerson: "약 ¥1,500 / ₩13,500", rating: "⭐ 4.3", tip: "고기 토핑의 양을 조절할 수 있습니다. 면의 양도 선택 가능." },
+                                { name: { kor: "★추가추천: 카레는 마실 것", jpn: "カレーは飲み物。", eng: "Curry is a Drink." }, description: "독특한 이름의 인기 카레 전문점", signatureMenu: "검은 소고기 카레, 붉은 닭고기 카레", avgCostPerPerson: "약 ¥1,200 / ₩10,800", rating: "⭐ 4.2", tip: "무료 토핑을 3가지 선택할 수 있어 푸짐하게 즐길 수 있습니다." },
                             ]},
                             { name: "저녁 산책 코스", icon: "🚶‍♂️", content: [{ detail: "네온사인이 화려한 아키하바라의 밤거리를 산책하거나, 조금 조용한 분위기를 원한다면 호텔 주변의 간다 강변을 따라 걷기" }] },
                         ]
@@ -309,103 +334,91 @@
             },
             3: {
                 title: "긴자 → 도쿄역 → 마루노우치",
-                theme: "세련된 쇼핑과 캐릭터, 그리고 화려한 야경",
-                route_highlight: "긴자/유라쿠초 지역에서 쇼핑과 점심을 즐긴 후, 도보나 지하철로 가까운 도쿄역으로 이동합니다. 저녁에는 도쿄역 주변 또는 치요다구청에서 야경을 감상하는 코스입니다.",
+                theme: "세련된 쇼핑과 반짝이는 도심 야경",
+                route_highlight: "아키하바라에서 출발해 긴자에서 쇼핑과 점심을 즐기고, 도보로 도쿄역으로 이동합니다. 오후에는 캐릭터 스트리트를 구경하고, 저녁에는 마루노우치 야경과 치요다구청 전망대를 즐기는 완벽한 도심 코스입니다.",
                 checklist: [
                     { text: "무인양품 긴자점 쇼핑하기", done: false },
                     { text: "아식스 긴자점에서 쇼핑하기", done: false },
-                    { text: "치이카와 랜드 방문하기", done: false },
-                    { text: "닌텐도 TOKYO 방문하기", done: false }
+                    { text: "치이카와 랜드 방문하기 (정리권 확인!)", done: false },
+                    { text: "치요다 구청에서 무료 야경 감상하기", done: false }
                 ],
                 sections: [
                     {
                         time: "오전",
-                        title: "긴자 코스: 플래그십 스토어 탐방",
+                        title: "긴자 코스: 플래그십 스토어 & 카페",
                         items: [
-                            { name: "이동", icon: "🚇", content: [{ detail: "<b>🚇 이동:</b> 아키하바라역에서 <b>JR 야마노테선(山手線)</b> 탑승 (약 7분) → 유라쿠초역(有楽町駅) 하차" }] },
-                            { name: { kor: "★메인 미션: 무인양품 긴자점", jpn: "無印良品 銀座", eng: "MUJI Ginza" }, icon: "🛍️", content: [{ detail: "이번 여행의 핵심 코스! 세계 최대 규모의 무인양품에서 시간을 넉넉히 잡고 쇼핑, 식사, 휴식까지 모든 것을 즐겨보세요." }] },
-                            { name: { kor: "★메인 미션: 아식스 긴자", jpn: "アシックスランウォークギンザ", eng: "ASICS RUNWALK GINZA" }, icon: "👟", content: [{ detail: "무인양품 근처에 위치. 3D 발 계측 서비스 등을 통해 내 발에 꼭 맞는 신발을 찾아보세요. 의류 및 액세서리도 다양합니다." }] },
-                            { name: "오전 산책 코스 (긴자)", icon: "🚶‍♂️", content: [{ detail: "무인양품 쇼핑 후, 긴자의 중심 거리인 주오도리(中央通り)를 따라 아이쇼핑하며 걷기. 주말에는 '보행자 천국'으로 운영되어 차 없는 거리를 즐길 수 있습니다." }] },
-                            { name: "점심 식사 (긴자/니혼바시)", icon: "🍜", content: [
-                                { name: { kor: "긴자 카가리", jpn: "銀座 篝", eng: "Ginza Kagari" }, description: "미슐랭 가이드에 오른 닭백탕 라멘", signatureMenu: "토리파이탄 소바 (특제)", menuDescription: "뽀얗고 진한 닭 육수 라멘", avgCostPerPerson: "약 ¥1,600 / ₩14,400 (라멘 1개 기준)", rating: "⭐ 4.3", tip: "예약 불가, 1~2시간 웨이팅 각오. 크림수프 같은 진한 국물." },
-                                { name: { kor: "긴자 스위스", jpn: "銀座スイス", eng: "Ginza Swiss" }, description: "'카츠카레'를 처음 만든 원조 가게", signatureMenu: "원조 카츠카레, 치바현산 포크 커틀릿 카레", menuDescription: "카레라이스 위에 돈카츠를 올린 요리", avgCostPerPerson: "약 ¥1,900 / ₩17,100 (카츠카레 1개 기준)", rating: "⭐ 4.1", tip: "클래식한 경양식집 분위기." },
-                                { name: { kor: "타이메이켄", jpn: "たいめいけん", eng: "Taimeiken" }, description: "80년 전통의 유명 오므라이스 맛집", signatureMenu: "탄포포 오므라이스, 볼네즈 스파게티", menuDescription: "칼로 가르면 펼쳐지는 반숙 오믈렛이 특징", avgCostPerPerson: "약 ¥2,800 / ₩25,200 (오므라이스 1개 기준)", rating: "⭐ 4.1", tip: "니혼바시에 위치. 점심시간 줄이 김." },
+                            { name: "이동", icon: "🚇", content: [{ detail: "<b>🚶‍♂️ 이동:</b> Nohga Hotel Akihabara Tokyo에서 도보 약 6분 거리인 <b>JR 아키하바라역(秋葉原駅)</b>으로 이동 → <b>JR 야마노테선(山手線)</b> 탑승 (약 7분) → <b>유라쿠초역(有楽町駅)</b> 하차 후 긴자 방면 출구 이용" }] },
+                            { name: "메인 쇼핑", icon: "🛍️", content: [
+                                { name: { kor: "★메인 미션: 무인양품 긴자점", jpn: "無印良品 銀座", eng: "MUJI Ginza" }, description: "세계 최대 규모의 무인양품 플래그십 스토어", popularItems: "긴자 한정 상품, 의류, 식품, 가구", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.3", tip: "지하 1층의 'MUJI Diner'에서 식사하거나, 1층 베이커리에서 빵을 맛보는 것도 좋습니다." },
+                                { name: { kor: "★메인 미션: 아식스 긴자", jpn: "アシックスランウォークギンザ", eng: "ASICS RUNWALK GINZA" }, description: "3D 발 계측 서비스가 있는 아식스 매장", popularItems: "러닝화, 의류, 액세서리", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.2", tip: "정확한 발 사이즈와 모양을 측정하여 최적의 신발을 추천받을 수 있습니다." },
+                                { name: { kor: "★추가추천: 이토야", jpn: "伊東屋", eng: "Itoya" }, description: "100년 역사의 대형 문구 전문점", popularItems: "만년필, 노트, 디자인 문구, 미술용품", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.5", tip: "건물 전체가 문구점으로, 각 층별로 테마가 있어 구경하는 재미가 쏠쏠합니다." },
+                                { name: { kor: "★추가추천: 긴자 미츠코시 / 마츠야 긴자", jpn: "銀座三越 / 松屋銀座", eng: "Ginza Mitsukoshi / Matsuya Ginza" }, description: "긴자의 대표적인 백화점", popularItems: "명품, 화장품, 지하 식품관(데파치카)", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.2", tip: "지하 식품관(데파치카)은 꼭 들러보세요. 고급스러운 디저트와 도시락의 천국입니다." },
+                            ]},
+                             { name: "카페 & 디저트 (긴자)", icon: "☕", content: [
+                                { name: { kor: "★추가추천: 카페 드 람브르", jpn: "カフェ・ド・ランブル", eng: "Café de L'Ambre" }, description: "1948년부터 영업한 전설적인 커피 명가", signatureMenu: "숙성 원두 드립 커피", avgCostPerPerson: "약 ¥1,200 / ₩10,800", rating: "⭐ 4.4", tip: "오직 커피만 판매하는 곳. 커피 애호가라면 반드시 들러야 할 성지입니다." },
+                                { name: { kor: "★추가추천: 라뒤레", jpn: "ラデュレ", eng: "Ladurée" }, description: "마카롱의 대명사, 파리의 고급 디저트 살롱", signatureMenu: "마카롱, 애프터눈 티 세트", avgCostPerPerson: "약 ¥3,000 / ₩27,000", rating: "⭐ 4.2", tip: "긴자 미츠코시 백화점 내에 위치. 창가 자리에서 긴자 거리를 내려다보며 즐길 수 있습니다." },
                             ]},
                         ]
                     },
                     {
-                        time: "오후",
-                        title: "도쿄역 코스: 캐릭터 쇼핑 & 산책",
+                        time: "점심",
+                        title: "긴자 & 도쿄역 주변 점심",
                         items: [
-                            { name: { kor: "치이카와 랜드", jpn: "ちいかわらんど", eng: "Chiikawa Land" }, icon: "💖", content: [{ detail: "<b>🚇 이동:</b> 긴자에서 도쿄역까지 도보(약 15분) 또는 <b>도쿄메트로 마루노우치선(丸ノ内線)</b>으로 1정거장.<br>'도쿄 캐릭터 스트리트' 방문. 방문 전 공식 SNS에서 정리권(번호표) 배부 여부 확인 필수!" }] },
-                             { name: "추가 추천 (애니메이션/게임/쇼핑)", icon: "🎮", content: [
-                                { name: { kor: "닌텐도 TOKYO/SHIBUYA", jpn: "Nintendo TOKYO/SHIBUYA", eng: "Nintendo TOKYO/SHIBUYA" }, description: "닌텐도 공식 스토어", popularItems: "마리오, 젤다, 동물의 숲 등 캐릭터 굿즈, 스토어 한정 상품", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.4", tip: "<b>🚇 이동:</b> 긴자역에서 <b>도쿄메트로 긴자선(銀座線)</b>으로 시부야역까지 약 16분.<br><b>예약/정리권 확인 필수.</b> 시부야 PARCO 6층. 대기열이 길 수 있으니 방문 전 공식 사이트 확인." },
-                                { name: { kor: "포켓몬 센터 DX & 포켓몬 카페", jpn: "ポケモンセンタートウキョーDX ＆ ポケモンカフェ", eng: "Pokémon Center TOKYO DX & Pokémon Cafe" }, description: "대형 포켓몬 공식 매장과 카페", popularItems: "도쿄 DX 한정 피카츄 인형, 각종 굿즈, 피카츄 플레이트", avgCostPerPerson: "카페 약 ¥3,000 / ₩27,000", rating: "⭐ 4.4", tip: "<b>카페는 예약 필수.</b> 니혼바시 다카시마야 백화점 내 위치. 도쿄역에서 도보 이동 가능. 공식 예약 사이트에서 사전 예약이 매우 치열하니 미리 확인해야 함." },
-                                { name: { kor: "돈키호테 긴자 본관", jpn: "ドン・キホーテ 銀座本館", eng: "Don Quijote Ginza" }, description: "긴자 지역의 대형 돈키호테", popularItems: "명품, 화장품, 과자 등", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.0", tip: "긴자 쇼핑 중 필요한 물품을 구매하거나 구경하기 좋음." },
-                                { name: { kor: "하쿠힌칸 토이 파크", jpn: "博品館TOY PARK", eng: "Hakuhinkan TOY PARK" }, description: "긴자에 위치한 대형 장난감 전문점", popularItems: "캐릭터 상품, 프라모델, 인형, 보드게임 등", avgCostPerPerson: "구경은 무료", rating: "⭐ 4.3", tip: "아이부터 어른까지 모두 즐길 수 있는 장난감 천국." },
+                            { name: "점심 식사 (선택)", icon: "🍜", content: [
+                                { name: { kor: "긴자 카가리", jpn: "銀座 篝", eng: "Ginza Kagari" }, description: "미슐랭 가이드에 오른 닭백탕 라멘", signatureMenu: "토리파이탄 소바 (특제)", avgCostPerPerson: "약 ¥1,600 / ₩14,400", rating: "⭐ 4.3", tip: "예약 불가, 1~2시간 웨이팅 각오. 크림수프 같은 진한 국물." },
+                                { name: { kor: "긴자 스위스", jpn: "銀座スイス", eng: "Ginza Swiss" }, description: "'카츠카레'를 처음 만든 원조 가게", signatureMenu: "원조 카츠카레", avgCostPerPerson: "약 ¥1,900 / ₩17,100", rating: "⭐ 4.1", tip: "클래식한 경양식집 분위기." },
+                                { name: { kor: "★추가추천: 츠지한", jpn: "つじ半", eng: "Tsujihan" }, description: "줄 서서 먹는 보석함 같은 카이센동 맛집", signatureMenu: "제이타쿠동 (카이센동)", avgCostPerPerson: "약 ¥2,000 / ₩18,000", rating: "⭐ 4.5", tip: "니혼바시에 위치. 마지막에 도미 국물을 부어 오차즈케로 즐기는 것이 별미입니다." },
+                                { name: { kor: "★추가추천: 로쿠린샤", jpn: "六厘舎", eng: "Rokurinsha" }, description: "도쿄역 라멘 스트리트의 절대 강자", signatureMenu: "츠케멘", avgCostPerPerson: "약 ¥1,300 / ₩11,700", rating: "⭐ 4.3", tip: "항상 긴 줄을 자랑하지만 기다릴 가치가 있는 진한 국물의 츠케멘." },
                             ]},
-                            { name: "오후 산책 코스 (도쿄역)", icon: "🚶‍♂️", type: "heat-tip", content: [{ detail: "<b>산책:</b> 도쿄역 마루노우치 광장에서 고풍스러운 역사를 감상하고, 황궁으로 이어지는 넓은 교코도리(行幸通り) 산책<br><b>실내 피서:</b> KITTE (キッテ) 옥상정원, 마루노우치 빌딩, 신마루노우치 빌딩 등에서 쇼핑 및 휴식<br><b>지하 쇼핑:</b> 도쿄역과 연결된 야에스 지하상가 (八重洲地下街) 탐방" }] },
                         ]
                     },
                     {
-                        time: "저녁",
-                        title: "야경 & 저녁 식사",
+                        time: "오후 ~ 저녁",
+                        title: "도쿄역, 마루노우치 야경",
                         items: [
-                            { name: { kor: "치요다구청 무료 야경", jpn: "千代田区役所", eng: "Chiyoda City Office" }, icon: "🌃", content: [{ detail: "<b>🚇 이동:</b> 도쿄역에서 <b>도쿄메트로 마루노우치선(丸ノ内線)</b> 오테마치역 환승 → <b>한조몬선(半蔵門線)</b> 구단시타역 하차 (약 15분)<br>10층 전망 휴게실에서 고쿄와 마루노우치 빌딩 숲의 차분하고 고급스러운 야경을 무료로 감상할 수 있습니다." }] },
-                            { name: "저녁 식사 (도쿄역/유라쿠초)", icon: "🍷", content: [
-                                { name: { kor: "오레노 이탈리안", jpn: "俺のイタリアン", eng: "Ore no Italian" }, description: "고급 요리를 저렴하게 즐기는 인기 레스토랑", signatureMenu: "트러플 까르보나라, 티본 스테이크", avgCostPerPerson: "약 ¥4,000 / ₩36,000 (요리 2개 + 주류)", rating: "⭐ 4.2", tip: "서서 먹는 컨셉. 예약하거나 일찍 방문 추천." },
-                                { name: { kor: "유라쿠초 가도 시타", jpn: "有楽町ガード下", eng: "Yurakucho Gado-shita" }, description: "퇴근길 직장인들의 찐 현지 맛집 거리", signatureMenu: "야키토리(닭꼬치), 모츠야키(곱창구이)", menuDescription: "닭고기 숯불 꼬치구이", avgCostPerPerson: "약 ¥3,000 / ₩27,000 (꼬치 + 맥주)", rating: "⭐ 4.0", tip: "연기 자욱한 좁은 가게에서 즐기는 일본 감성." },
-                                { name: { kor: "버드랜드 긴자", jpn: "バードランド 銀座", eng: "Bird Land Ginza" }, description: "미슐랭 스타 야키토리 전문점", signatureMenu: "오마카세 코스", menuDescription: "주방장이 엄선한 닭꼬치 코스 요리", avgCostPerPerson: "저녁 약 ¥13,000 / ₩117,000 (코스 기준)", rating: "⭐ 4.3", tip: "<b>예약 필수.</b> TableCheck 등 예약 사이트를 통해 최소 몇 주 전 예약해야 함." },
+                            { name: "캐릭터 쇼핑 & 산책", icon: "💖", content: [
+                                { name: { kor: "도쿄 캐릭터 스트리트", jpn: "東京キャラクターストリート", eng: "Tokyo Character Street" }, description: "도쿄역 지하에 위치한 캐릭터 굿즈 천국", popularItems: "치이카와, 포켓몬, 점프샵, 방송국 굿즈", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.3", tip: "치이카와 랜드 등 인기샵은 정리권 배부 여부를 미리 확인하세요." },
+                                { name: { kor: "★추가추천: 도쿄 오카시 랜드", jpn: "東京おかしランド", eng: "Tokyo Okashi Land" }, description: "유명 과자 브랜드의 안테나 샵", popularItems: "매장에서 직접 만든 과자, 한정판 스낵", avgCostPerPerson: "약 ¥1,000", rating: "⭐ 4.1", tip: "캐릭터 스트리트 바로 옆에 위치. 갓 만든 과자를 맛볼 수 있습니다." },
                             ]},
-                            { name: "저녁 산책 코스 (야경)", icon: "🚶‍♂️", content: [{ detail: "저녁 식사 후, 일루미네이션이 아름다운 마루노우치 나카도리(丸の内仲通り)를 걷거나, 도쿄역 야경을 감상하며 산책하기" }] },
+                            { name: { kor: "★요청: 치요다구청 무료 야경", jpn: "千代田区役所", eng: "Chiyoda City Office" }, icon: "🌃", content: [{ detail: "<b>🚇 이동:</b> 도쿄역에서 <b>도쿄메트로 마루노우치선(丸ノ内線)</b> 오테마치역 환승 → <b>한조몬선(半蔵門線)</b> 구단시타역 하차 (약 15분)<br>10층 전망 휴게실에서 고쿄와 마루노우치 빌딩 숲의 차분하고 고급스러운 야경을 무료로 감상할 수 있습니다." }] },
+                            { name: "저녁 식사 (도쿄역/마루노우치)", icon: "🍷", content: [
+                                { name: { kor: "오레노 이탈리안", jpn: "俺のイタリアン", eng: "Ore no Italian" }, description: "고급 요리를 저렴하게 즐기는 인기 레스토랑", signatureMenu: "트러플 까르보나라, 티본 스테이크", avgCostPerPerson: "약 ¥4,000 / ₩36,000", rating: "⭐ 4.2", tip: "서서 먹는 컨셉. 예약하거나 일찍 방문 추천." },
+                                { name: { kor: "유라쿠초 가도 시타", jpn: "有楽町ガード下", eng: "Yurakucho Gado-shita" }, description: "퇴근길 직장인들의 찐 현지 맛집 거리", signatureMenu: "야키토리(닭꼬치), 모츠야키(곱창구이)", avgCostPerPerson: "약 ¥3,000 / ₩27,000", rating: "⭐ 4.0", tip: "연기 자욱한 좁은 가게에서 즐기는 일본 감성." },
+                                { name: { kor: "★추가추천: 마루노우치 하우스", jpn: "丸の内ハウス", eng: "Marunouchi House" }, description: "신마루노우치 빌딩 7층의 레스토랑 & 바 존", signatureMenu: "다양한 레스토랑, 테라스 바", avgCostPerPerson: "약 ¥4,000 / ₩36,000", rating: "⭐ 4.2", tip: "테라스에서 도쿄역 야경을 보며 식사나 칵테일을 즐길 수 있습니다." },
+                            ]},
                         ]
                     }
                 ]
             },
             4: {
-                title: "우에노 & 야나카 산책 후 공항으로",
-                theme: "활기찬 시장과 정겨운 골목, 그리고 마지막 만찬",
-                route_highlight: "아키하바라에서 가까운 우에노로 이동하여 시장과 공원을 둘러본 후, 도보로 야나카 긴자까지 산책하는 여유로운 동선입니다. 하네다 공항 이동을 고려해 일정을 마무리합니다.",
+                title: "시부야 & 귀국 준비",
+                theme: "트렌드의 중심, 시부야에서 마지막 날 즐기기",
+                route_highlight: "호텔에 짐을 맡기고 JR 야마노테선으로 시부야로 이동해 마지막 날을 즐깁니다. 쇼핑과 점심 식사 후 다시 아키하바라로 돌아와 짐을 찾고, 하네다 공항으로 이동하는 편리한 동선입니다.",
                 checklist: [
-                    { text: "아메요코 시장에서 쇼핑하기", done: false },
-                    { text: "야나카 긴자에서 멘치카츠 먹기", done: false },
-                    { text: "우에노 공원 미술관/박물관 방문", done: false },
+                    { text: "시부야 스크램블 교차로 건너보기", done: false },
+                    { text: "닌텐도 스토어/점프샵 방문하기", done: false },
+                    { text: "시부야 스카이에서 전망 감상 (선택)", done: false },
                     { text: "공항 면세점에서 선물 구매하기", done: false }
                 ],
                 sections: [
                     {
                         time: "오전",
-                        title: "우에노 & 야나카 오전 코스",
+                        title: "시부야 탐방",
                         items: [
-                            { name: "호텔 체크아웃 및 이동", icon: "🛄", content: [{ detail: "호텔 체크아웃 후 짐 맡기고 <b>🚇 이동:</b> 아키하바라역에서 <b>JR 야마노테선(山手線)</b> 탑승 (약 4분) → 우에노역(上野駅) 하차" }] },
-                            { name: "오전 활동 (선택)", icon: "🛒", content: [{ detail: "<b>A. 아키하바라 마무리:</b> 못 산 물건 쇼핑<br><b>B. 우에노 시장 구경:</b> 아메요코 시장 (アメ横 / Ameya Yokocho)에서 드럭스토어 등 쇼핑<br><b>C. 야나카 긴자 산책:</b> '고양이 마을' 야나카 긴자 (谷中銀座 / Yanaka Ginza)에서 길거리 음식 즐기기" }] },
-                             { name: "추가 추천 (쇼핑 & 구경)", icon: "✨", content: [
-                                { name: { kor: "돈키호테 우에노점", jpn: "ドン・キホーテ 上野店", eng: "Don Quijote Ueno" }, description: "우에노 공원 근처 대형 돈키호테", popularItems: "과자, 의약품, 잡화 등", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.0", tip: "공항 가기 전 마지막 쇼핑을 즐기기 좋음." },
-                                { name: { kor: "요도바시 카메라 (우에노점)", jpn: "ヨドバシカメラ 上野店", eng: "Yodobashi Camera Ueno" }, description: "우에노역 바로 근처 대형 전자매장", popularItems: "가전, 카메라, 게임 등", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.1", tip: "마지막 날 쇼핑하기 좋은 위치." },
-                                { name: { kor: "카야바 커피", jpn: "カヤバ珈琲", eng: "Kayaba Coffee" }, description: "오래된 목조 가옥을 개조한 레트로 카페", signatureMenu: "계란 샌드위치, 커피", menuDescription: "폭신한 타마고 산도와 진한 커피", avgCostPerPerson: "약 ¥1,500 / ₩13,500", rating: "⭐ 4.2", tip: "야나카 긴자 산책 중 들르기 좋은 곳. 2층 다다미 좌석이 인기." },
-                                { name: { kor: "야마시로야", jpn: "ヤマシロヤ", eng: "Yamashiroya" }, description: "우에노역 앞 대형 장난감 가게", popularItems: "캐릭터 상품, 장난감", avgCostPerPerson: "구경은 무료", rating: "⭐ 4.3", tip: "닌텐도, 산리오 등 다양한 캐릭터 상품이 많음." },
+                            { name: "호텔 체크아웃 및 이동", icon: "🛄", content: [{ detail: "호텔 체크아웃 후 프론트에 짐 맡기기 → <b>🚶‍♂️ 이동:</b> 호텔에서 도보 약 6분 거리인 <b>JR 아키하바라역(秋葉原駅)</b>으로 이동 → <b>JR 야마노테선(山手線)</b> 탑승 (시나가와 방면, 약 30분) → <b>시부야역(渋谷駅)</b> 하차 후 <b>하치코 출구</b> 이용" }] },
+                            { name: "오전 활동 (시부야)", icon: "🚶‍♀️", content: [{ detail: "<b>명소:</b> 시부야 스크램블 교차로, 하치코 동상<br><b>쇼핑:</b> 시부야 109, 시부야 PARCO (닌텐도 스토어, 점프샵), 디즈니 스토어 등" }] },
+                            { name: "점심 식사 (시부야)", icon: "🍔", content: [
+                                { name: { kor: "이치란 라멘", jpn: "一蘭", eng: "Ichiran Ramen" }, description: "독서실 칸막이로 유명한 돈코츠 라멘 체인", signatureMenu: "돈코츠 라멘", avgCostPerPerson: "약 ¥1,500 / ₩13,500", rating: "⭐ 4.4", tip: "항상 줄이 길지만 회전율이 빠른 편. 자신만의 라멘을 커스텀할 수 있습니다." },
+                                { name: { kor: "우오베이", jpn: "魚べい", eng: "Uobei" }, description: "태블릿으로 주문하는 100엔 스시 체인", signatureMenu: "각종 100엔 스시", avgCostPerPerson: "약 ¥1,800 / ₩16,200", rating: "⭐ 4.3", tip: "가성비가 매우 좋고, 주문하는 재미가 있습니다. 웨이팅이 길 수 있습니다." },
+                                { name: { kor: "규카츠 모토무라", jpn: "牛カツもと村", eng: "Gyukatsu Motomura" }, description: "시부야의 또 다른 유명 규카츠 맛집", signatureMenu: "규카츠 정식", avgCostPerPerson: "약 ¥1,900 / ₩17,100", rating: "⭐ 4.3", tip: "아키하바라의 이치니산과 비교해보는 재미도 있습니다." },
                             ]},
-                            { name: "오전 산책 코스 (우에노/야나카)", icon: "🚶‍♂️", type: "heat-tip", content: [{ detail: "<b>시장 산책:</b> 활기 넘치는 아메요코 시장 (アメ横) 구경<br><b>공원 산책:</b> 우에노 공원 (上野公園)의 녹음을 즐기며 시노바즈 연못 주변 걷기<br><b>골목 산책:</b> 우에노 공원을 가로질러 정겨운 야나카 긴자 (谷中銀座) 골목까지 걷기" }] },
-                        ]
-                    },
-                    {
-                        time: "점심 식사",
-                        title: "우에노에서의 마지막 만찬",
-                        items: [
-                            { name: "점심 식사 추천", icon: "🍣", content: [
-                                { name: { kor: "야마베 오카치마치점", jpn: "とんかつ山家 御徒町店", eng: "Tonkatsu Yamabe" }, description: "1000엔 이하 최고의 가성비 돈카츠", signatureMenu: "로스카츠 정식, 히레카츠 정식", menuDescription: "두툼한 등심/안심 돈카츠와 밥, 국이 나오는 정식", avgCostPerPerson: "약 ¥950 / ₩8,550 (로스카츠 정식 기준)", rating: "⭐ 4.5", tip: "식사 시간에는 항상 긴 줄이 있음." },
-                                { name: { kor: "미우라미사키코", jpn: "三浦三崎港", eng: "Miuramisakiko" }, description: "큼직한 네타가 특징인 인기 회전초밥", signatureMenu: "참치 뱃살, 성게알 군함", menuDescription: "접시를 가득 채우는 신선한 회전초밥", avgCostPerPerson: "약 ¥2,800 / ₩25,200 (5~6접시 기준)", rating: "⭐ 4.3", tip: "식사 시간 웨이팅 가능성." },
-                                { name: { kor: "우나토토", jpn: "宇奈とと", eng: "Unatoto" }, description: "단돈 550엔부터 시작하는 파격적 장어덮밥", signatureMenu: "우나동, 우나동 더블", menuDescription: "달콤짭짤한 소스를 바른 장어구이 덮밥", avgCostPerPerson: "약 ¥900 / ₩8,100 (기본 우나동 기준)", rating: "⭐ 4.1", tip: "저렴하게 장어 맛보고 싶을 때 최적." },
-                                { name: { kor: "미나토야", jpn: "みなとや", eng: "Minatoya" }, description: "시장 한복판의 신선한 해산물 덮밥", signatureMenu: "카이센동, 타코야끼", menuDescription: "밥 위에 신선한 회를 올린 덮밥", avgCostPerPerson: "약 ¥800 / ₩7,200 (카이센동 1개 기준)", rating: "⭐ 4.3", tip: "서서 먹는 곳이라 회전율 빠름." },
-                            ]},
-                             { name: "점심 식사 후 산책", icon: "🚶‍♂️", content: [{ detail: "식사 후 우에노 공원 내 미술관이나 박물관으로 이동하며 짧게 산책하거나, 아메요코 시장에서 소화시킬 겸 마지막 쇼핑 즐기기" }] },
                         ]
                     },
                     {
                         time: "오후 3:30 ~",
                         title: "공항으로 이동 및 출국",
                         items: [
-                            { name: "출국 준비", icon: "🎁", content: [{ detail: "아키하바라 호텔에서 짐 찾기.<br><b>🚇 이동:</b> 아키하바라역에서 <b>JR 야마노테선/게이힌토호쿠선</b> 탑승 → 하마마쓰초역(浜松町駅)에서 <b>도쿄 모노레일(東京モノレール)</b> 환승 → 하네다 공항(羽田空港) 2터미널 (약 45분 소요).<br>체크인 후 면세점에서 '도쿄 밀크 치즈 팩토리', '뉴욕 퍼펙트 치즈' 등 선물 구매" }] },
+                            { name: "출국 준비", icon: "🎁", content: [{ detail: "<b>🚇 이동:</b> JR 야마노테선으로 <b>시부야역</b> → <b>아키하바라역</b> 이동 (약 30분) → 호텔에서 짐 찾기<br><b>🚇 공항 이동:</b> <b>JR 아키하바라역</b>에서 <b>야마노테선</b> 또는 <b>게이힌토호쿠선</b> 탑승 (시나가와/오후나 방면) → <b>하마마쓰초역(浜松町駅)</b>에서 하차 (약 12분) → 표지판을 따라 <b>도쿄 모노레일(東京モノレール)</b>로 환승 → <b>하네다 공항(羽田空港) 제2터미널</b> 하차 (약 20분 소요).<br>체크인 후 면세점에서 '도쿄 밀크 치즈 팩토리', '뉴욕 퍼펙트 치즈' 등 선물 구매" }] },
                         ]
                     }
                 ]
@@ -566,18 +579,18 @@
                                 <input type="text" value="${item.text}" data-day="${day}" data-index="${index}" class="checklist-text-input ml-2 p-1 w-full text-gray-700">
                             </label>
                             <button data-day="${day}" data-index="${index}" class="delete-mission-btn text-red-400 hover:text-red-600 font-bold text-lg">×</button>
-                         </li>`;
+                          </li>`;
             });
             html += `</ul>
-                     <div class="mt-4 flex gap-2">
-                        <input type="text" id="new-mission-input-${day}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm" placeholder="새 미션 추가...">
-                        <button data-day="${day}" class="add-mission-btn bg-amber-500 hover:bg-amber-600 text-white font-bold py-1 px-3 rounded-md">추가</button>
-                     </div>
-                    </div>`;
+                       <div class="mt-4 flex gap-2">
+                         <input type="text" id="new-mission-input-${day}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm" placeholder="새 미션 추가...">
+                         <button data-day="${day}" class="add-mission-btn bg-amber-500 hover:bg-amber-600 text-white font-bold py-1 px-3 rounded-md">추가</button>
+                       </div>
+                     </div>`;
             html += `<div class="bg-blue-50 p-4 rounded-lg shadow-md border-l-4 border-blue-400">
                         <h3 class="text-lg font-bold mb-2 text-blue-800 flex items-center">💡 ${day}일차 동선 하이라이트</h3>
                         <p class="text-sm text-blue-700">${dayData.route_highlight}</p>
-                     </div>`;
+                      </div>`;
             html += `</div></div>`;
 
             html += `</div>`;
@@ -630,6 +643,17 @@
             });
         }
         
+        function showTimedToast(message, duration = 8000) {
+            const toast = document.getElementById('toast-message');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.style.backgroundColor = '#2563EB'; // Blue-600
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
         function saveData() {
             localStorage.setItem('tokyoTripPlanData', JSON.stringify(tripData));
         }
@@ -792,7 +816,16 @@
 
         // Initialize
         loadData();
-        renderDay(0);
+        
+        const initialDay = 2;
+        navButtons.forEach(btn => btn.classList.remove('active'));
+        const activeButton = document.querySelector(`.nav-button[data-day='${initialDay}']`);
+        if(activeButton) {
+            activeButton.classList.add('active');
+        }
+
+        renderDay(initialDay);
+        
     </script>
 </body>
 </html>
