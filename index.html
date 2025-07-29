@@ -7,10 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutral -->
-    <!-- Application Structure Plan: A tab-based SPA with an 'Overview' dashboard and daily views. The daily view is now a two-column layout on wider screens: the main timeline on the left, and a new 'Checklist & Tips' panel on the right. This increases information density and adds utility (task tracking) without overwhelming the user. Cards are still expandable for deep details. -->
-    <!-- Visualization & Content Choices: Overview - Charts retained for a quick summary. Daily Itinerary - Interactive cards with richer content. New 'Checklist' feature (HTML/JS) with checkboxes for interactivity and progress tracking. This directly addresses the feedback for "more information" by making key tasks and tips permanently visible on each day's view. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         :root {
             --base-font-size: 16px;
@@ -45,7 +41,7 @@
             transition: max-height 0.5s ease-out, padding 0.5s ease-out;
         }
         .card-content.open {
-            max-height: 3500px; /* Increased max-height for more content */
+            max-height: 3500px;
             transition: max-height 1.5s ease-in, padding 0.5s ease-in;
         }
         .heat-tip {
@@ -123,6 +119,34 @@
         .toast.show {
             bottom: 2rem;
         }
+        /* Travel Log Styles */
+        .log-table {
+            width: 100%;
+            margin-top: 1rem;
+            border-collapse: collapse;
+        }
+        .log-table th, .log-table td {
+            border: 1px solid #E5E7EB;
+            padding: 0.75rem;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+        .log-table th {
+            background-color: #F9FAFB;
+        }
+        .log-table input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.375rem;
+        }
+        .delete-log-btn {
+            background: none;
+            border: none;
+            color: #EF4444;
+            cursor: pointer;
+            font-size: 1.25rem;
+        }
         @media (min-width: 768px) {
             .chart-container {
                 height: 320px;
@@ -139,12 +163,13 @@
             <p class="mt-2 text-base md:text-lg text-gray-600">7월의 더위를 피하는 쾌적한 여행 플래너 (2025년 기준 정보)</p>
         </header>
 
-        <nav class="flex justify-center border-b-2 border-gray-200 mb-2">
+        <nav class="flex justify-center border-b-2 border-gray-200 mb-2 flex-wrap">
             <button data-day="0" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">✈️ 개요 & 출국</button>
             <button data-day="1" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 1일차</button>
             <button data-day="2" class="nav-button active text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 2일차</button>
             <button data-day="3" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 3일차</button>
             <button data-day="4" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">🗓️ 4일차</button>
+            <button data-day="log" class="nav-button text-sm sm:text-base font-bold py-3 px-2 sm:px-4">📝 나의 여행 기록</button>
         </nav>
         
         <div class="flex justify-center items-center gap-2 mb-6 text-sm flex-wrap">
@@ -168,6 +193,7 @@
     </div>
 
     <script>
+        // --- DATA STRUCTURES ---
         let tripData = {
             0: {
                 title: "여행 개요 및 출국 절차",
@@ -239,22 +265,11 @@
                             { name: "점심 식사 (선택)", icon: "🍜", content: [
                                 { name: { kor: "텐동 텐야", jpn: "てんや", eng: "Tendon Tenya" }, description: "압도적인 가성비의 텐동 체인점", signatureMenu: "기본 텐동, 상(上)텐동", menuDescription: "밥 위에 각종 튀김을 올린 덮밥", avgCostPerPerson: "약 ¥900 / ₩8,100 (기본 텐동 + 미소시루)", rating: "⭐ 3.9", tip: "웨이팅 거의 없음, 빠르고 저렴하게 해결" },
                                 { name: { kor: "다이코쿠야 텐푸라", jpn: "大黒家天麩羅", eng: "Daikokuya Tempura" }, description: "참기름으로 튀긴 촉촉한 전통 텐동", signatureMenu: "텐동, 새우 텐동", menuDescription: "진한 간장 소스에 푹 담근 튀김 덮밥", avgCostPerPerson: "약 ¥2,200 / ₩19,800 (텐동 1개 기준)", rating: "⭐ 3.8", tip: "바삭함보다 진한 소스 맛을 즐기는 곳. 식사 시간 웨이팅 김." },
-                                { name: { kor: "소메타로", jpn: "染太郎", eng: "Sometaro" }, description: "직접 만들어 먹는 체험형 오코노미야키", signatureMenu: "오코노미야키, 야키소바", menuDescription: "재료를 섞어 철판에 부쳐먹는 일본식 전", avgCostPerPerson: "약 ¥1,600 / ₩14,400 (오코노미야키 1개 + 음료)", rating: "⭐ 4.2", tip: "옛 일본 가옥의 정취를 느낄 수 있음." },
-                                { name: { kor: "아사쿠사 우나테츠", jpn: "浅草うな鉄", eng: "Asakusa Unatetsu" }, description: "장어덮밥(히츠마부시) 맛집", signatureMenu: "히츠마부시", menuDescription: "장어덮밥을 세 가지 방식으로 즐기는 요리", avgCostPerPerson: "약 ¥4,000 / ₩36,000", rating: "⭐ 4.3", tip: "점심시간에는 웨이팅이 길 수 있으니 미리 방문 추천." },
                             ]},
                             { name: "전통 디저트 & 간식 투어", icon: "🍡", content: [
                                 { name: { kor: "키비단고 아즈마", jpn: "きびだんご あづま", eng: "Kibidango Azuma" }, description: "따끈하고 부드러운 수수 경단", signatureMenu: "키비단고, 말차", menuDescription: "콩고물을 묻힌 작은 수수 경단 꼬치", avgCostPerPerson: "약 ¥400 / ₩3,600 (1인분 기준)", rating: "⭐ 4.4", tip: "나카미세도리 초입에 위치. 회전율이 빠름." },
                                 { name: { kor: "아사쿠사 카게츠도", jpn: "浅草花月堂", eng: "Asakusa Kagetsudo" }, description: "얼굴만 한 크기의 거대 멜론빵", signatureMenu: "멜론빵, 아이스 멜론빵", menuDescription: "겉은 바삭, 속은 촉촉한 일본 대표 간식 빵", avgCostPerPerson: "약 ¥300 / ₩2,700 (빵 1개 기준)", rating: "⭐ 4.3", tip: "센소지 본당 근처에 위치." },
-                                { name: { kor: "사료 츠보시타", jpn: "茶寮 つぼ市製茶本舗", eng: "Saryo Tsuboichi" }, description: "고급스러운 분위기의 전문 말차 카페", signatureMenu: "말차 파르페, 말차 티라미수", menuDescription: "말차 아이스크림, 팥, 떡 등을 올린 디저트", avgCostPerPerson: "약 ¥1,600 / ₩14,400 (파르페 1개 기준)", rating: "⭐ 4.5", tip: "덴보인도리 근처. 잠시 쉬어가기 좋은 곳." },
-                                { name: { kor: "후나와", jpn: "舟和", eng: "Funawa" }, description: "고구마 양갱(이모요캉) 원조 가게", signatureMenu: "이모요캉, 앙코다마", menuDescription: "고구마 본연의 맛이 살아있는 달콤한 양갱", avgCostPerPerson: "약 ¥800 / ₩7,200", rating: "⭐ 4.3", tip: "아사쿠사 기념품으로 가장 유명한 것 중 하나." },
                             ]},
-                             { name: "추가 추천 (쇼핑 & 구경)", icon: "✨", content: [
-                                { name: { kor: "돈키호테 아사쿠사점", jpn: "ドン・キホーテ 浅草店", eng: "Don Quijote Asakusa" }, description: "없는 게 없는 만물 잡화점", popularItems: "의약품(샤론파스, 카베진), 화장품(퍼펙트휩), 산토리 위스키, 인기 과자류", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.1", tip: "24시간 영업. 늦은 밤이나 이른 아침에 방문하면 여유롭게 쇼핑 가능." },
-                                { name: { kor: "푸글렌 아사쿠사", jpn: "フグレン浅草", eng: "Fuglen Asakusa" }, description: "노르웨이 오슬로에서 온 유명 카페", signatureMenu: "오늘의 커피, 에어로프레스 커피", menuDescription: "산미 있는 스페셜티 커피", avgCostPerPerson: "약 ¥800 / ₩7,200", rating: "⭐ 4.4", tip: "낮에는 카페, 밤에는 바로 운영. 감각적인 인테리어." },
-                                { name: { kor: "무인양품 (아사쿠사 EKIMISE점)", jpn: "無印良品 浅草EKIMISE", eng: "MUJI Asakusa EKIMISE" }, description: "아사쿠사역과 연결된 쇼핑몰 내 위치", popularItems: "잠옷, 아로마 디퓨저, 레토르트 카레, 문구류", avgCostPerPerson: "쇼핑 비용", rating: "⭐ 4.0", tip: "동선이 편리하고, 여행 중 필요한 물품을 구매하기 좋음." },
-                                { name: { kor: "갓파바시 도구 거리", jpn: "かっぱ橋道具街", eng: "Kappabashi Kitchen Town" }, description: "일본 최대의 주방용품 전문 상점가", popularItems: "일본 식칼, 예쁜 그릇, 음식 모형 열쇠고리", avgCostPerPerson: "구경은 무료", rating: "⭐ 4.3", tip: "요리에 관심 없어도 음식 모형 가게 등 볼거리가 많음." },
-                            ]},
-                            { name: "주변 산책 및 피서", icon: "🚶‍♂️", type: "heat-tip", content: [{ detail: "<b>산책:</b> 덴보인도리 (伝法院通り / Denboin-dori) → 스미다 공원 강변 산책<br><b>실내 피서:</b> 아사쿠사 문화 관광 센터 8층 무료 전망대, 신나카미세 상점가 (新仲見世商店街 / Shin-Nakamise) 구경<br><b>지하 쇼핑:</b> 아사쿠사역과 연결된 일본에서 가장 오래된 지하상가인 아사쿠사 지하상가 (浅草地下街 / Asakusa Chikagai)에서 레트로한 분위기를 느껴보세요." }] },
                         ]
                     },
                     {
@@ -263,11 +278,9 @@
                         items: [
                             { name: "호텔 체크인 및 휴식", icon: "♨️", content: [{ detail: "호텔 체크인 후 온천 시설 즐기기" }] },
                             { name: "저녁 & 야경 (선택)", icon: "🌃", content: [
-                                { name: { kor: "A코스: 스카이트리", jpn: "東京スカイツリー", eng: "Tokyo Skytree" }, description: "야경, 쇼핑, 식사를 한 번에 해결", signatureMenu: "소라마치 내 다양한 레스토랑", avgCostPerPerson: "식사 약 ¥3,000~ / ₩27,000원~", rating: "⭐ 4.4", tip: "<b>🚇 이동:</b> 아사쿠사역에서 <b>도부 스카이트리 라인(東武スカイツリーライン)</b>으로 1정거장 (약 3분).<br><b>전망대 예약 추천.</b> 공식 홈페이지나 Klook, KKday 등에서 온라인 사전 예매 시 시간 절약 가능. 소라마치 내에 '점프샵'이 있어 만화 굿즈 구경 가능." },
+                                { name: { kor: "A코스: 스카이트리", jpn: "東京スカイツリー", eng: "Tokyo Skytree" }, description: "야경, 쇼핑, 식사를 한 번에 해결", signatureMenu: "소라마치 내 다양한 레스토랑", avgCostPerPerson: "식사 약 ¥3,000~ / ₩27,000원~", rating: "⭐ 4.4", tip: "<b>🚇 이동:</b> 아사쿠사역에서 <b>도부 스카이트리 라인(東武スカイツリーライン)</b>으로 1정거장 (약 3분).<br><b>전망대 예약 추천.</b>" },
                                 { name: { kor: "B코스: 호피도리", jpn: "ホッピー通り", eng: "Hoppy Dori" }, description: "센소지 서쪽에 위치한 활기찬 선술집 거리", signatureMenu: "소 힘줄 조림(규스지니코미), 모츠니코미(곱창조림)", menuDescription: "소 힘줄을 부드럽게 끓여낸 일본식 안주", avgCostPerPerson: "약 ¥3,000 / ₩27,000 (안주 2개 + 주류)", rating: "⭐ 4.1", tip: "저녁 시간엔 매우 붐비지만 빈자리를 찾아 들어가는 재미가 있음." },
-                                { name: { kor: "C코스: 몬자야키", jpn: "もんじゃ もへじ", eng: "Monja Moheji" }, description: "아사쿠사 내에 위치한 도쿄 명물 몬자야키 전문점", signatureMenu: "명란 몬자야키, 해물 몬자", menuDescription: "묽은 반죽에 재료를 섞어 철판에 지져 먹는 음식", avgCostPerPerson: "약 ¥2,500 / ₩22,500 (몬자야키 + 음료)", rating: "⭐ 4.7", tip: "직원이 직접 만들어주는 경우가 많아 편리함." },
                             ]},
-                             { name: "저녁 산책 코스", icon: "🚶‍♂️", content: [{ detail: "<b>A코스 선택 시:</b> 스카이트리 아래 소라마치 주변 산책<br><b>B코스 선택 시:</b> 조명이 켜진 센소지 경내를 둘러본 후 호피도리로 이동<br><b>C코스 선택 시:</b> 스미다 강변을 따라 걸으며 라이트업된 아사히 맥주 빌딩과 스카이트리 야경 감상" }] },
                         ]
                     }
                 ]
@@ -425,11 +438,24 @@
             }
         };
 
+        let travelLogData = {
+            1: [
+                { place: "텐동 텐야", type: "🍜 식사", memo: "가성비 최고! 점심으로 간단히 먹기 좋았다.", link: "https://www.google.com/maps/search/?api=1&query=てんや" },
+                { place: "아사쿠사 카게츠도", type: "🍡 간식", memo: "정말 얼굴만 한 멜론빵. 겉은 바삭, 속은 폭신!", link: "https://www.google.com/maps/search/?api=1&query=浅草花月堂" },
+                { place: "오냐도 노노 아사쿠사", type: "♨️ 숙소", memo: "온천이 정말 좋았음. 저녁에 먹는 소바도 최고.", link: "https://www.google.com/maps/search/?api=1&query=Onyado%20Nono%20Asakusa%20Bettei" }
+            ],
+            2: [],
+            3: [],
+            4: []
+        };
+
+        // --- DOM ELEMENTS ---
         const contentArea = document.getElementById('content-area');
         const navButtons = document.querySelectorAll('.nav-button');
         let themeChart = null;
         let budgetChart = null;
 
+        // --- RENDER FUNCTIONS ---
         function createActionLinks(nameObj) {
             if (!nameObj || !nameObj.jpn) return '';
             const query = encodeURIComponent(nameObj.jpn);
@@ -477,11 +503,6 @@
         }
         
         function renderDay(day) {
-            if (day === 0) {
-                renderOverview();
-                return;
-            }
-
             const dayData = tripData[day];
             let html = `<div class="grid lg:grid-cols-3 gap-8">`;
             
@@ -520,10 +541,10 @@
                                     <p class="text-sm text-gray-500 italic mt-1">"${detailItem.description}"</p>
                                     <div class="mt-2 text-sm space-y-1">
                                         <p><span class="font-semibold text-amber-700">구글 평점:</span> ${detailItem.rating || '정보 없음'}</p>
-                                        <p><span class="font-semibold text-amber-700">대표메뉴/품목:</span> ${detailItem.signatureMenu} ${detailItem.menuDescription ? `<span class="text-gray-500 text-xs">- ${detailItem.menuDescription}</span>` : ''}</p>
+                                        <p><span class="font-semibold text-amber-700">대표메뉴/품목:</span> ${detailItem.signatureMenu || ''} ${detailItem.menuDescription ? `<span class="text-gray-500 text-xs">- ${detailItem.menuDescription}</span>` : ''}</p>
                                         ${detailItem.popularItems ? `<p><span class="font-semibold text-amber-700">인기 품목:</span> ${detailItem.popularItems}</p>` : ''}
-                                        <p><span class="font-semibold text-amber-700">1인당 예상 비용:</span> ${detailItem.avgCostPerPerson}</p>
-                                        <p><span class="font-semibold text-amber-700">꿀팁:</span> ${detailItem.tip}</p>
+                                        <p><span class="font-semibold text-amber-700">1인당 예상 비용:</span> ${detailItem.avgCostPerPerson || ''}</p>
+                                        <p><span class="font-semibold text-amber-700">꿀팁:</span> ${detailItem.tip || ''}</p>
                                     </div>
                                     <div class="mt-3 space-y-2">
                                         <div class="flex items-center gap-4">
@@ -597,27 +618,65 @@
             contentArea.innerHTML = html;
         }
 
+        function renderTravelLog() {
+            let html = `<h2 class="text-2xl font-bold mb-4 text-amber-800">📝 나의 여행 기록</h2>`;
+            html += `<p class="text-md text-gray-500 mb-6">이곳에 여행하며 다녀온 장소들에 대한 추억을 기록하고 관리해 보세요.</p>`;
+
+            for (const day in travelLogData) {
+                html += `<h3 class="text-xl font-semibold mt-6 mb-2">🗓️ ${day}일차</h3>`;
+                html += `<div class="overflow-x-auto"><table class="log-table">
+                            <thead>
+                                <tr>
+                                    <th class="w-1/4">장소</th>
+                                    <th class="w-1/6">종류</th>
+                                    <th class="w-2/5">나의 메모</th>
+                                    <th class="w-1/4">관련 링크</th>
+                                    <th class="w-1/12">삭제</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+                travelLogData[day].forEach((entry, index) => {
+                    html += `<tr>
+                                <td>${entry.place}</td>
+                                <td>${entry.type}</td>
+                                <td>${entry.memo}</td>
+                                <td><a href="${entry.link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">링크 보기</a></td>
+                                <td><button class="delete-log-btn" data-day="${day}" data-index="${index}">🗑️</button></td>
+                             </tr>`;
+                });
+
+                html += `   <tr>
+                                <td><input type="text" id="log-place-${day}" placeholder="장소 이름"></td>
+                                <td><input type="text" id="log-type-${day}" placeholder="예: 🍜 식사"></td>
+                                <td><input type="text" id="log-memo-${day}" placeholder="간단한 메모"></td>
+                                <td><input type="text" id="log-link-${day}" placeholder="https://..."></td>
+                                <td><button class="add-log-btn bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded" data-day="${day}">추가</button></td>
+                            </tr>
+                        </tbody>
+                    </table></div>`;
+            }
+            contentArea.innerHTML = html;
+        }
+
         function renderCharts() {
             if (themeChart) themeChart.destroy();
             if (budgetChart) budgetChart.destroy();
 
-            const themeCtx = document.getElementById('themeChart').getContext('2d');
+            const themeCtx = document.getElementById('themeChart')?.getContext('2d');
+            if (!themeCtx) return;
+            
             themeChart = new Chart(themeCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['1일차: 전통', '2일차: 서브컬처', '3일차: 쇼핑', '4일차: 시장'],
+                    labels: ['1일차: 전통', '2일차: 서브컬처', '3일차: 쇼핑', '4일차: 트렌드'],
                     datasets: [{
                         label: '주요 활동',
                         data: [100, 100, 100, 100],
                         backgroundColor: ['#FBBF24', '#60A5FA', '#F472B6', '#34D399'],
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { display: false } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false } } }
             });
 
             const budgetCtx = document.getElementById('budgetChart').getContext('2d');
@@ -625,66 +684,64 @@
                 type: 'doughnut',
                 data: {
                     labels: ['가성비 맛집', '특별한 맛집', '디저트/간식'],
-                    datasets: [{
-                        data: [50, 25, 25],
-                        backgroundColor: ['#34D399', '#F472B6', '#FBBF24'],
-                        borderColor: '#FDFBF8',
-                        borderWidth: 4
-                    }]
+                    datasets: [{ data: [50, 25, 25], backgroundColor: ['#34D399', '#F472B6', '#FBBF24'], borderColor: '#FDFBF8', borderWidth: 4 }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' },
-                        tooltip: { callbacks: { label: (c) => `${c.label}: ${c.raw}%` } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (c) => `${c.label}: ${c.raw}%` } } } }
             });
         }
         
-        function showTimedToast(message, duration = 8000) {
+        // --- DATA HANDLING ---
+        function saveData() {
+            localStorage.setItem('tokyoTripPlanData', JSON.stringify(tripData));
+            localStorage.setItem('tokyoTripLogData', JSON.stringify(travelLogData));
+        }
+
+        function loadData() {
+            const savedPlanData = localStorage.getItem('tokyoTripPlanData');
+            if (savedPlanData) {
+                // Merging logic to preserve user data while updating the structure
+                const parsedData = JSON.parse(savedPlanData);
+                Object.keys(tripData).forEach(dayKey => {
+                    if (parsedData[dayKey]) {
+                        if (parsedData[dayKey].checklist) {
+                            tripData[dayKey].checklist = parsedData[dayKey].checklist;
+                        }
+                        if (parsedData[dayKey].sections) {
+                            parsedData[dayKey].sections.forEach((section, sectionIndex) => {
+                                section.items.forEach((item, itemIndex) => {
+                                    item.content.forEach((detailItem, detailIndex) => {
+                                        if (detailItem.name && tripData[dayKey].sections[sectionIndex]?.items[itemIndex]?.content[detailIndex]) {
+                                            const target = tripData[dayKey].sections[sectionIndex].items[itemIndex].content[detailIndex];
+                                            target.wantToGo = detailItem.wantToGo || false;
+                                            target.visited = detailItem.visited || false;
+                                            target.memo = detailItem.memo || '';
+                                        }
+                                    });
+                                });
+                            });
+                        }
+                    }
+                });
+            }
+
+            const savedLogData = localStorage.getItem('tokyoTripLogData');
+            if (savedLogData) {
+                travelLogData = JSON.parse(savedLogData);
+            }
+        }
+
+        // --- UTILITY FUNCTIONS ---
+        function showTimedToast(message, duration = 3000, isError = false) {
             const toast = document.getElementById('toast-message');
             if (!toast) return;
             toast.textContent = message;
-            toast.style.backgroundColor = '#2563EB'; // Blue-600
+            toast.style.backgroundColor = isError ? '#DC2626' : '#16A34A'; // Red-600 for error, Green-600 for success
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
             }, duration);
         }
 
-        function saveData() {
-            localStorage.setItem('tokyoTripPlanData', JSON.stringify(tripData));
-        }
-
-        function loadData() {
-            const savedData = localStorage.getItem('tokyoTripPlanData');
-            if (savedData) {
-                const parsedData = JSON.parse(savedData);
-                // Merge saved user data into the default tripData structure
-                Object.keys(parsedData).forEach(dayKey => {
-                    if (tripData[dayKey] && parsedData[dayKey].sections) {
-                        parsedData[dayKey].sections.forEach((section, sectionIndex) => {
-                            section.items.forEach((item, itemIndex) => {
-                                item.content.forEach((detailItem, detailIndex) => {
-                                    if (detailItem.name && tripData[dayKey].sections[sectionIndex]?.items[itemIndex]?.content[detailIndex]) {
-                                        const target = tripData[dayKey].sections[sectionIndex].items[itemIndex].content[detailIndex];
-                                        target.wantToGo = detailItem.wantToGo || false;
-                                        target.visited = detailItem.visited || false;
-                                        target.memo = detailItem.memo || '';
-                                    }
-                                });
-                            });
-                        });
-                        if (parsedData[dayKey].checklist) {
-                           tripData[dayKey].checklist = parsedData[dayKey].checklist;
-                        }
-                    }
-                });
-            }
-        }
-        
         function applyFontSize(size) {
             document.documentElement.style.setProperty('--base-font-size', `${size}px`);
         }
@@ -694,51 +751,50 @@
             applyFontSize(newSize);
         }
 
+        // --- EVENT LISTENERS ---
         navButtons.forEach(button => {
             button.addEventListener('click', () => {
-                const day = parseInt(button.dataset.day);
+                const page = button.dataset.day;
                 navButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
-                renderDay(day);
+                if (page === 'log') {
+                    renderTravelLog();
+                } else {
+                    renderDay(parseInt(page));
+                }
             });
         });
         
         contentArea.addEventListener('click', function(e) {
+            // Card expand/collapse
+            const header = e.target.closest('.card-header');
+            if (header && !e.target.closest('.map-link') && !e.target.closest('.copy-button')) {
+                const content = header.nextElementSibling;
+                const arrow = header.querySelector('span.text-amber-600');
+                content.classList.toggle('open');
+                arrow.style.transform = content.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+                return;
+            }
+
+            // Copy button
             const copyButton = e.target.closest('.copy-button');
             if (copyButton) {
-                e.stopPropagation();
-                const textToCopy = copyButton.dataset.copyText;
-                const originalIcon = copyButton.innerHTML;
-
-                const textArea = document.createElement('textarea');
-                textArea.value = textToCopy;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-
-                copyButton.innerHTML = '✅';
-                copyButton.classList.add('copied');
-                setTimeout(() => {
-                    copyButton.innerHTML = originalIcon;
-                    copyButton.classList.remove('copied');
-                }, 1500);
+                navigator.clipboard.writeText(copyButton.dataset.copyText).then(() => {
+                    const originalIcon = copyButton.innerHTML;
+                    copyButton.innerHTML = '✅';
+                    copyButton.classList.add('copied');
+                    setTimeout(() => {
+                        copyButton.innerHTML = originalIcon;
+                        copyButton.classList.remove('copied');
+                    }, 1500);
+                });
                 return;
             }
 
-            const deleteBtn = e.target.closest('.delete-mission-btn');
-            if (deleteBtn) {
-                const day = deleteBtn.dataset.day;
-                const index = parseInt(deleteBtn.dataset.index);
-                tripData[day].checklist.splice(index, 1);
-                saveData();
-                renderDay(day);
-                return;
-            }
-
-            const addBtn = e.target.closest('.add-mission-btn');
-            if (addBtn) {
-                const day = addBtn.dataset.day;
+            // Checklist add/delete
+            const addMissionBtn = e.target.closest('.add-mission-btn');
+            if (addMissionBtn) {
+                const day = addMissionBtn.dataset.day;
                 const input = document.getElementById(`new-mission-input-${day}`);
                 if (input && input.value.trim() !== '') {
                     tripData[day].checklist.push({ text: input.value.trim(), done: false });
@@ -747,85 +803,94 @@
                 }
                 return;
             }
-            
-            const header = e.target.closest('.card-header');
-            if (header && !e.target.closest('.map-link')) {
-                const content = header.nextElementSibling;
-                const arrow = header.querySelector('span.text-amber-600');
-                content.classList.toggle('open');
-                if (content.classList.contains('open')) {
-                    content.style.paddingTop = '0.5rem';
-                    arrow.style.transform = 'rotate(180deg)';
-                } else {
-                    content.style.paddingTop = '0';
-                    arrow.style.transform = 'rotate(0deg)';
+            const deleteMissionBtn = e.target.closest('.delete-mission-btn');
+            if (deleteMissionBtn) {
+                const day = deleteMissionBtn.dataset.day;
+                const index = parseInt(deleteMissionBtn.dataset.index);
+                tripData[day].checklist.splice(index, 1);
+                saveData();
+                renderDay(day);
+                return;
+            }
+
+            // Travel Log add/delete
+            const addLogBtn = e.target.closest('.add-log-btn');
+            if (addLogBtn) {
+                const day = addLogBtn.dataset.day;
+                const place = document.getElementById(`log-place-${day}`).value.trim();
+                const type = document.getElementById(`log-type-${day}`).value.trim();
+                const memo = document.getElementById(`log-memo-${day}`).value.trim();
+                const link = document.getElementById(`log-link-${day}`).value.trim();
+                if (place) {
+                    travelLogData[day].push({ place, type, memo, link });
+                    saveData();
+                    renderTravelLog();
                 }
+                return;
+            }
+            const deleteLogBtn = e.target.closest('.delete-log-btn');
+            if (deleteLogBtn) {
+                const day = deleteLogBtn.dataset.day;
+                const index = parseInt(deleteLogBtn.dataset.index);
+                travelLogData[day].splice(index, 1);
+                saveData();
+                renderTravelLog();
+                return;
             }
         });
 
         contentArea.addEventListener('input', function(e) {
             const target = e.target;
+            // Planner data binding
             if (target.matches('input[type="checkbox"][data-path]')) {
                 const [day, sectionIndex, itemIndex, detailIndex] = target.dataset.path.split('-');
                 const type = target.dataset.type;
                 tripData[day].sections[sectionIndex].items[itemIndex].content[detailIndex][type] = target.checked;
-                saveData();
             } else if (target.matches('textarea[data-path]')) {
                 const [day, sectionIndex, itemIndex, detailIndex] = target.dataset.path.split('-');
                 tripData[day].sections[sectionIndex].items[itemIndex].content[detailIndex].memo = target.value;
-                saveData();
             } else if (target.matches('input[type="checkbox"][data-day]')) {
                  const day = target.dataset.day;
                  const index = target.dataset.index;
                  tripData[day].checklist[index].done = target.checked;
-                 saveData();
             } else if (target.matches('.checklist-text-input')) {
                 const day = target.dataset.day;
                 const index = target.dataset.index;
                 tripData[day].checklist[index].text = target.value;
-                saveData();
+            }
+            // No need to call saveData() on every input, it's handled by the save button.
+        });
+
+        // --- TOP-LEVEL CONTROLLERS ---
+        document.getElementById('save-plan').addEventListener('click', () => {
+            saveData();
+            showTimedToast('여행 계획이 저장되었습니다!', 2000);
+        });
+
+        document.getElementById('delete-plan').addEventListener('click', () => {
+            if (confirm('정말로 모든 계획과 기록을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                localStorage.removeItem('tokyoTripPlanData');
+                localStorage.removeItem('tokyoTripLogData');
+                location.reload();
             }
         });
 
-        // Font size controller logic
         const increaseButton = document.getElementById('increase-font');
         const decreaseButton = document.getElementById('decrease-font');
         const resetButton = document.getElementById('reset-font');
         let currentFontSize = parseInt(localStorage.getItem('tokyoTripFontSize') || '16');
         
         applyFontSize(currentFontSize);
+        increaseButton.addEventListener('click', () => { if (currentFontSize < 24) { currentFontSize++; updateFontSize(currentFontSize); } });
+        decreaseButton.addEventListener('click', () => { if (currentFontSize > 12) { currentFontSize--; updateFontSize(currentFontSize); } });
+        resetButton.addEventListener('click', () => { currentFontSize = 16; updateFontSize(currentFontSize); });
 
-        increaseButton.addEventListener('click', () => {
-            if (currentFontSize < 24) { // Max size
-                currentFontSize += 1;
-                updateFontSize(currentFontSize);
-            }
-        });
-
-        decreaseButton.addEventListener('click', () => {
-            if (currentFontSize > 12) { // Min size
-                currentFontSize -= 1;
-                updateFontSize(currentFontSize);
-            }
-        });
-        
-        resetButton.addEventListener('click', () => {
-            currentFontSize = 16; // Default size
-            updateFontSize(currentFontSize);
-        });
-
-        // Initialize
+        // --- INITIALIZATION ---
         loadData();
-        
         const initialDay = 2;
-        navButtons.forEach(btn => btn.classList.remove('active'));
-        const activeButton = document.querySelector(`.nav-button[data-day='${initialDay}']`);
-        if(activeButton) {
-            activeButton.classList.add('active');
-        }
-
+        document.querySelector(`.nav-button[data-day='${initialDay}']`)?.classList.add('active');
+        document.querySelector(`.nav-button[data-day='0']`)?.classList.remove('active');
         renderDay(initialDay);
-        
     </script>
 </body>
 </html>
